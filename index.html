@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Personal Management – All‑in‑One</title>
+  <!-- Lightweight libs via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a; /* slate-900 */
+      --panel: #111827; /* gray-900 */
+      --muted: #cbd5e1; /* slate-300 */
+      --text: #e2e8f0; /* slate-200 */
+      --accent: #22c55e; /* green-500 */
+      --accent-2: #60a5fa; /* blue-400 */
+      --danger: #ef4444; /* red-500 */
+      --card: #0b1221; /* dark blend */
+      --border: #1f2937; /* gray-800 */
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .brand { font-weight: 800; letter-spacing: .3px; font-size: 20px; display: flex; align-items: center; gap: 10px; }
+    .brand .badge { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #031; padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 900; }
+    .tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-top: 14px; }
+    .tab-btn { border: 1px solid var(--border); background: #0b1221; color: var(--text); padding: 10px 12px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+    .tab-btn.active { outline: 2px solid transparent; border-color: transparent; background: linear-gradient(135deg, #0b1221 0%, #0b1221 60%), linear-gradient(135deg, var(--accent), var(--accent-2)); background-clip: padding-box, border-box; border: 2px solid transparent; }
+    main { margin-top: 20px; }
+    section { display: none; }
+    section.active { display: block; }
+
+    .grid { display: grid; gap: 14px; }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+    .card h3 { margin: 0 0 10px; font-size: 16px; color: var(--muted); font-weight: 700; }
+    .stat { display: flex; align-items: baseline; justify-content: space-between; padding: 10px 0; border-top: 1px dashed var(--border); }
+    .stat:first-child { border-top: none; padding-top: 0; }
+    .muted { color: var(--muted); font-size: 12px; }
+    .btn { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+    .btn.primary { background: var(--accent); color: #052e13; border: none; }
+    .btn.danger { background: var(--danger); color: #fff; border: none; }
+    .btn.ghost { background: transparent; border-color: var(--border); }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    input, select, textarea { width: 100%; background: #0a1220; color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+    label { font-size: 12px; color: var(--muted); font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 10px; }
+    th, td { border-bottom: 1px solid var(--border); padding: 10px; text-align: left; }
+    th { background: #0f1a2f; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
+    tr:hover td { background: #0b1428; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; border: 1px solid var(--border); color: var(--muted); }
+    .flex-between { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .hr { height: 1px; background: var(--border); margin: 10px 0; }
+
+    /* Mini calendar */
+    .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .calendar .cell { border: 1px solid var(--border); border-radius: 10px; padding: 8px; min-height: 70px; background:#0a1220; position: relative; }
+    .calendar .cell .d { font-size: 12px; color: var(--muted); }
+    .calendar .cell.today { outline: 2px solid var(--accent); }
+    .calendar .cell .dot { position: absolute; bottom: 6px; left: 6px; right: 6px; height: 6px; border-radius: 3px; background: var(--accent-2); }
+
+    footer { margin: 30px 0 10px; text-align: center; color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L20 7V17L12 22L4 17V7L12 2Z" stroke="url(#g)" stroke-width="2"/>
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+              <stop stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent-2)"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>Personal Management</span>
+        <span class="badge">ALL‑IN‑ONE</span>
+      </div>
+      <div class="row">
+        <button class="btn ghost" id="btn-backup-json" title="Backup ke JSON">Backup JSON</button>
+        <label class="btn" for="import-json" title="Pulihkan dari JSON">Import JSON</label>
+        <input id="import-json" type="file" accept="application/json" style="display:none" />
+      </div>
+    </header>
+
+    <nav class="tabs" id="tabs"></nav>
+
+    <main>
+      <!-- DASHBOARD -->
+      <section id="tab-dashboard" class="active">
+        <div class="grid grid-3">
+          <div class="card">
+            <h3>Ringkasan Keuangan</h3>
+            <div class="stat"><span class="muted">Total Saldo</span><strong id="dash-saldo">Rp 0</strong></div>
+            <div class="stat"><span class="muted">Pemasukan Bulan Ini</span><strong id="dash-income">Rp 0</strong></div>
+            <div class="stat"><span class="muted">Pengeluaran Bulan Ini</span><strong id="dash-expense">Rp 0</strong></div>
+          </div>
+          <div class="card">
+            <h3>Tugas & Catatan</h3>
+            <div class="stat"><span class="muted">Tugas Selesai</span><strong id="dash-done">0</strong></div>
+            <div class="stat"><span class="muted">Tugas Belum Selesai</span><strong id="dash-todo">0</strong></div>
+            <div class="stat"><span class="muted">Jumlah Catatan</span><strong id="dash-notes">0</strong></div>
+          </div>
+          <div class="card">
+            <h3>Agenda</h3>
+            <div class="stat"><span class="muted">Event Hari Ini</span><strong id="dash-today">0</strong></div>
+            <div class="stat"><span class="muted">Event Bulan Ini</span><strong id="dash-month">0</strong></div>
+            <div class="stat"><span class="muted">Profil Tersimpan</span><strong id="dash-profile">-</strong></div>
+          </div>
+        </div>
+        <div class="grid grid-2" style="margin-top:14px">
+          <div class="card">
+            <div class="flex-between"><h3>Grafik Keuangan (Bulan Ini)</h3><span class="muted">By Kategori</span></div>
+            <canvas id="chart-finance" height="140"></canvas>
+          </div>
+          <div class="card">
+            <div class="flex-between"><h3>Agenda Terdekat</h3><button class="btn ghost" onclick="switchTab('agenda')">Kelola Agenda</button></div>
+            <div id="upcoming-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- KEUANGAN -->
+      <section id="tab-keuangan">
+        <div class="card">
+          <h3>Input Transaksi</h3>
+          <div class="grid grid-3">
+            <div>
+              <label>Tanggal</label>
+              <input type="date" id="fin-date" />
+            </div>
+            <div>
+              <label>Jenis</label>
+              <select id="fin-type">
+                <option value="income">Pemasukan</option>
+                <option value="expense">Pengeluaran</option>
+              </select>
+            </div>
+            <div>
+              <label>Kategori</label>
+              <input type="text" id="fin-cat" placeholder="Gaji, Makan, Transport..." />
+            </div>
+            <div>
+              <label>Deskripsi</label>
+              <input type="text" id="fin-desc" placeholder="Contoh: Gaji bulanan" />
+            </div>
+            <div>
+              <label>Jumlah</label>
+              <input type="number" id="fin-amount" placeholder="0" />
+            </div>
+            <div class="row" style="align-items:end">
+              <button class="btn primary" onclick="addTransaction()">Simpan</button>
+              <button class="btn" onclick="clearFinanceForm()">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:14px">
+          <div class="card">
+            <div class="flex-between">
+              <h3>Daftar Transaksi</h3>
+              <div class="row">
+                <select id="fin-filter-month" onchange="renderFinance()"></select>
+                <button class="btn danger" onclick="deleteAll('finances')">Hapus Semua</button>
+              </div>
+            </div>
+            <div class="hr"></div>
+            <div style="overflow:auto">
+              <table>
+                <thead><tr><th>Tanggal</th><th>Jenis</th><th>Kategori</th><th>Deskripsi</th><th>Jumlah</th><th></th></tr></thead>
+                <tbody id="fin-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Grafik & Saldo</h3>
+            <div class="stat"><span class="muted">Saldo</span><strong id="fin-sum">Rp 0</strong></div>
+            <div class="stat"><span class="muted">Total Pemasukan</span><strong id="fin-income">Rp 0</strong></div>
+            <div class="stat"><span class="muted">Total Pengeluaran</span><strong id="fin-expense">Rp 0</strong></div>
+            <canvas id="chart-cat" height="160" style="margin-top:10px"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- CATATAN & TUGAS -->
+      <section id="tab-notes">
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>Catatan Harian</h3>
+            <div class="grid">
+              <textarea id="note-text" rows="3" placeholder="Tulis catatan singkat..."></textarea>
+              <div class="row">
+                <button class="btn primary" onclick="addNote()">Tambah Catatan</button>
+                <button class="btn danger" onclick="deleteAll('notes')">Hapus Semua</button>
+              </div>
+            </div>
+            <div class="hr"></div>
+            <div id="notes-list"></div>
+          </div>
+          <div class="card">
+            <h3>Daftar Tugas</h3>
+            <div class="row">
+              <input id="task-text" placeholder="Tugas baru..." />
+              <button class="btn primary" onclick="addTask()">Tambah</button>
+              <button class="btn danger" onclick="deleteAll('tasks')">Hapus Semua</button>
+            </div>
+            <div class="hr"></div>
+            <div id="tasks-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AGENDA & JADWAL -->
+      <section id="tab-agenda">
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>Tambah Jadwal</h3>
+            <div class="grid grid-2">
+              <div>
+                <label>Tanggal</label>
+                <input type="date" id="evt-date" />
+              </div>
+              <div>
+                <label>Waktu</label>
+                <input type="time" id="evt-time" />
+              </div>
+              <div class="grid" style="grid-column: 1 / -1">
+                <label>Deskripsi</label>
+                <input type="text" id="evt-desc" placeholder="Contoh: Meeting proyek" />
+              </div>
+              <div class="row" style="grid-column: 1 / -1">
+                <button class="btn primary" onclick="addEvent()">Simpan</button>
+                <button class="btn" onclick="clearEventForm()">Reset</button>
+                <button class="btn danger" onclick="deleteAll('events')">Hapus Semua</button>
+              </div>
+            </div>
+            <div class="hr"></div>
+            <div id="events-list"></div>
+          </div>
+          <div class="card">
+            <div class="flex-between">
+              <h3>Kalender Mini</h3>
+              <div class="row">
+                <button class="btn" onclick="navMonth(-1)">◀</button>
+                <div class="pill" id="cal-title">-</div>
+                <button class="btn" onclick="navMonth(1)">▶</button>
+              </div>
+            </div>
+            <div class="hr"></div>
+            <div class="calendar" id="calendar"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROFIL -->
+      <section id="tab-profil">
+        <div class="card">
+          <h3>Informasi Pribadi</h3>
+          <div class="grid grid-3">
+            <div><label>Nama</label><input id="pf-name" placeholder="Nama lengkap" /></div>
+            <div><label>Email</label><input id="pf-email" placeholder="email@contoh.com" /></div>
+            <div><label>No. HP</label><input id="pf-phone" placeholder="08xxxx" /></div>
+            <div class="grid" style="grid-column: 1 / -1"><label>Alamat</label><input id="pf-address" placeholder="Alamat lengkap" /></div>
+            <div class="grid" style="grid-column: 1 / -1"><label>Catatan</label><textarea id="pf-notes" rows="3" placeholder="Informasi tambahan..."></textarea></div>
+            <div class="row" style="grid-column: 1 / -1">
+              <button class="btn primary" onclick="saveProfile()">Simpan Profil</button>
+              <button class="btn" onclick="loadProfile()">Muat Kembali</button>
+              <button class="btn danger" onclick="clearProfile()">Hapus Profil</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EKSPOR / IMPOR -->
+      <section id="tab-export">
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>Ekspor Data</h3>
+            <div class="row">
+              <button class="btn primary" onclick="exportExcel()">Ekspor ke Excel (.xlsx)</button>
+              <button class="btn" onclick="exportWord()">Ekspor ke Word (.docx)</button>
+            </div>
+            <p class="muted" style="margin-top:8px">Semua data (keuangan, catatan, tugas, agenda, profil) diekspor.</p>
+          </div>
+          <div class="card">
+            <h3>Impor / Reset</h3>
+            <div class="row">
+              <label class="btn" for="import-json-2">Impor dari JSON</label>
+              <input id="import-json-2" type="file" accept="application/json" style="display:none" />
+              <button class="btn danger" onclick="resetAll()">Reset Semua Data</button>
+            </div>
+            <p class="muted" style="margin-top:8px">Anda juga bisa backup & restore lewat tombol di bagian header.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Dibuat untuk Anda – single-file, ringan, dan siap hosting. Data tersimpan otomatis di <strong>localStorage</strong>.
+    </footer>
+  </div>
+
+<script>
+// ==========================
+// UTIL & STATE MANAGEMENT
+// ==========================
+const IDR = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+const tabs = [
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'keuangan', label: 'Keuangan' },
+  { id: 'notes', label: 'Catatan & Tugas' },
+  { id: 'agenda', label: 'Agenda & Kalender' },
+  { id: 'profil', label: 'Profil' },
+  { id: 'export', label: 'Ekspor/Impor' },
+];
+
+const store = {
+  finances: [], // {id, date(yyyy-mm-dd), type, cat, desc, amount}
+  notes: [], // {id, text, dateISO}
+  tasks: [], // {id, text, done, dateISO}
+  events: [], // {id, date, time, desc}
+  profile: {}, // {name, email, phone, address, notes}
+};
+
+function loadAll() {
+  for (const k of Object.keys(store)) {
+    const raw = localStorage.getItem('pm_' + k);
+    if (raw) {
+      try { store[k] = JSON.parse(raw); } catch { /* ignore */ }
+    }
+  }
+}
+function saveAll() {
+  for (const k of Object.keys(store)) {
+    localStorage.setItem('pm_' + k, JSON.stringify(store[k]));
+  }
+}
+function uid() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+function fmtDate(d) { return new Date(d + 'T00:00:00').toLocaleDateString('id-ID'); }
+function todayYMD(){ const d=new Date(); return d.toISOString().slice(0,10); }
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.id===id));
+  document.querySelectorAll('main section').forEach(s=>s.classList.toggle('active', s.id==='tab-' + id));
+  // rerender things that need layout
+  if (id==='dashboard') renderDashboard();
+  if (id==='keuangan') renderFinance();
+  if (id==='notes') { renderNotes(); renderTasks(); }
+  if (id==='agenda') { renderEvents(); renderCalendar(); }
+  if (id==='profil') loadProfile();
+}
+
+// Build tabs
+(function initTabs(){
+  const nav = document.getElementById('tabs');
+  for (const t of tabs) {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (t.id==='dashboard' ? ' active' : '');
+    btn.textContent = t.label;
+    btn.dataset.id = t.id;
+    btn.onclick = () => switchTab(t.id);
+    nav.appendChild(btn);
+  }
+})();
+
+// ==========================
+// DASHBOARD
+// ==========================
+let chartFinanceDashboard;
+function renderDashboard() {
+  // Saldo dan ringkasan bulan ini
+  const month = (new Date()).toISOString().slice(0,7); // yyyy-mm
+  let saldo = 0, inc=0, exp=0;
+  const byCat = {};
+  for (const t of store.finances) {
+    const amt = Number(t.amount)||0;
+    if (t.type==='income') saldo+=amt; else saldo-=amt;
+    if ((t.date||'').startsWith(month)) {
+      if (t.type==='income') inc+=amt; else exp+=amt;
+      const key = t.cat || 'Lainnya';
+      byCat[key] = (byCat[key]||0) + (t.type==='expense' ? amt : -amt); // positive expense weight
+    }
+  }
+  document.getElementById('dash-saldo').textContent = IDR.format(saldo);
+  document.getElementById('dash-income').textContent = IDR.format(inc);
+  document.getElementById('dash-expense').textContent = IDR.format(exp);
+
+  // Tugas & catatan
+  const done = store.tasks.filter(t=>t.done).length;
+  const todo = store.tasks.length - done;
+  document.getElementById('dash-done').textContent = done;
+  document.getElementById('dash-todo').textContent = todo;
+  document.getElementById('dash-notes').textContent = store.notes.length;
+
+  // Agenda
+  const today = todayYMD();
+  const todayCount = store.events.filter(e=>e.date===today).length;
+  const monthCount = store.events.filter(e=> (e.date||'').startsWith(month)).length;
+  document.getElementById('dash-today').textContent = todayCount;
+  document.getElementById('dash-month').textContent = monthCount;
+  document.getElementById('dash-profile').textContent = store.profile?.name ? 'Sudah' : 'Belum';
+
+  // Upcoming list (7 hari ke depan)
+  const now = new Date();
+  const weekLater = new Date(now.getTime()+7*24*3600*1000);
+  const upcoming = store.events
+    .map(e=>({ ...e, dt: new Date(e.date + 'T' + (e.time||'00:00')) }))
+    .filter(e=> e.dt>=now && e.dt<=weekLater)
+    .sort((a,b)=>a.dt-b.dt)
+    .slice(0,8);
+  const holder = document.getElementById('upcoming-list');
+  holder.innerHTML = upcoming.length ? '' : '<p class="muted">Tidak ada agenda 7 hari ke depan.</p>';
+  for (const u of upcoming) {
+    const div = document.createElement('div');
+    div.className = 'stat';
+    div.innerHTML = `<span class="muted">${u.dt.toLocaleString('id-ID')}</span><strong>${u.desc||'-'}</strong>`;
+    holder.appendChild(div);
+  }
+
+  // Chart by category (expenses positive)
+  const ctx = document.getElementById('chart-finance');
+  const labels = Object.keys(byCat);
+  const data = labels.map(k=> Math.max(byCat[k],0));
+  if (chartFinanceDashboard) chartFinanceDashboard.destroy();
+  chartFinanceDashboard = new Chart(ctx, {
+    type: 'bar', data: { labels, datasets: [{ label: 'Pengeluaran per Kategori (bulan ini)', data }] }, options:{ responsive:true, maintainAspectRatio:false }
+  });
+}
+
+// ==========================
+// KEUANGAN
+// ==========================
+let chartCat;
+function addTransaction(){
+  const date = document.getElementById('fin-date').value || todayYMD();
+  const type = document.getElementById('fin-type').value;
+  const cat = (document.getElementById('fin-cat').value||'').trim() || (type==='income'?'Pemasukan':'Pengeluaran');
+  const desc = document.getElementById('fin-desc').value.trim();
+  const amount = Number(document.getElementById('fin-amount').value||0);
+  if (!amount) return alert('Jumlah tidak boleh 0');
+  store.finances.push({ id: uid(), date, type, cat, desc, amount });
+  saveAll();
+  clearFinanceForm();
+  renderFinance();
+  renderDashboard();
+}
+function clearFinanceForm(){
+  document.getElementById('fin-date').value = '';
+  document.getElementById('fin-type').value = 'income';
+  document.getElementById('fin-cat').value = '';
+  document.getElementById('fin-desc').value = '';
+  document.getElementById('fin-amount').value = '';
+}
+function deleteTransaction(id){
+  const i = store.finances.findIndex(x=>x.id===id);
+  if (i>-1) { store.finances.splice(i,1); saveAll(); renderFinance(); renderDashboard(); }
+}
+function monthOptions(selectId){
+  const sel = document.getElementById(selectId);
+  const months = [...new Set(store.finances.map(f=> (f.date||'').slice(0,7)).filter(Boolean))].sort().reverse();
+  const cur = (new Date()).toISOString().slice(0,7);
+  const opts = [cur, ...months.filter(m=>m!==cur)];
+  sel.innerHTML = opts.map(m=>`<option value="${m}">${m}</option>`).join('');
+}
+function renderFinance(){
+  monthOptions('fin-filter-month');
+  const month = document.getElementById('fin-filter-month').value || (new Date()).toISOString().slice(0,7);
+  const rows = store.finances
+    .filter(f=> (f.date||'').startsWith(month))
+    .sort((a,b)=> a.date.localeCompare(b.date))
+  ;
+  const tbody = document.getElementById('fin-tbody');
+  tbody.innerHTML = '';
+  let saldo=0, inc=0, exp=0; const byCat={};
+  for (const r of rows) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${fmtDate(r.date)}</td><td><span class="pill">${r.type==='income'?'Pemasukan':'Pengeluaran'}</span></td><td>${r.cat||'-'}</td><td>${r.desc||'-'}</td><td>${IDR.format(r.amount)}</td><td><button class="btn danger" onclick="deleteTransaction('${r.id}')">Hapus</button></td>`;
+    tbody.appendChild(tr);
+    if (r.type==='income'){ inc+=r.amount; saldo+=r.amount; } else { exp+=r.amount; saldo-=r.amount; }
+    if (r.type==='expense') byCat[r.cat||'Lainnya']=(byCat[r.cat||'Lainnya']||0)+r.amount;
+  }
+  document.getElementById('fin-sum').textContent = IDR.format(saldo);
+  document.getElementById('fin-income').textContent = IDR.format(inc);
+  document.getElementById('fin-expense').textContent = IDR.format(exp);
+
+  const labels = Object.keys(byCat);
+  const data = labels.map(k=>byCat[k]);
+  if (chartCat) chartCat.destroy();
+  chartCat = new Chart(document.getElementById('chart-cat'), {
+    type:'doughnut', data:{ labels, datasets:[{ label:'Pengeluaran', data }] }, options:{ responsive:true, maintainAspectRatio:false }
+  });
+}
+
+// ==========================
+// CATATAN & TUGAS
+// ==========================
+function addNote(){
+  const text = (document.getElementById('note-text').value||'').trim();
+  if (!text) return;
+  store.notes.unshift({ id: uid(), text, dateISO: new Date().toISOString() });
+  saveAll();
+  document.getElementById('note-text').value='';
+  renderNotes();
+  renderDashboard();
+}
+function renderNotes(){
+  const wrap = document.getElementById('notes-list');
+  wrap.innerHTML = store.notes.length? '' : '<p class="muted">Belum ada catatan.</p>';
+  for (const n of store.notes) {
+    const div = document.createElement('div');
+    div.className='stat';
+    const d = new Date(n.dateISO).toLocaleString('id-ID');
+    div.innerHTML = `<div><div class="muted">${d}</div><div>${n.text}</div></div><div><button class="btn danger" onclick="delItem('notes','${n.id}')">Hapus</button></div>`;
+    wrap.appendChild(div);
+  }
+}
+function addTask(){
+  const text = (document.getElementById('task-text').value||'').trim();
+  if (!text) return;
+  store.tasks.unshift({ id: uid(), text, done:false, dateISO: new Date().toISOString() });
+  saveAll();
+  document.getElementById('task-text').value='';
+  renderTasks();
+  renderDashboard();
+}
+function toggleTask(id){
+  const t = store.tasks.find(x=>x.id===id);
+  if (t) { t.done=!t.done; saveAll(); renderTasks(); renderDashboard(); }
+}
+function renderTasks(){
+  const wrap = document.getElementById('tasks-list');
+  wrap.innerHTML = store.tasks.length? '' : '<p class="muted">Belum ada tugas.</p>';
+  for (const t of store.tasks) {
+    const div = document.createElement('div');
+    div.className='stat';
+    div.innerHTML = `<div><label><input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${t.id}')"/> <span ${t.done?'style="text-decoration:line-through;opacity:.7"':''}>${t.text}</span></label></div><div class="row"><button class="btn danger" onclick="delItem('tasks','${t.id}')">Hapus</button></div>`;
+    wrap.appendChild(div);
+  }
+}
+
+// ==========================
+// AGENDA & KALENDER
+// ==========================
+let calYear=(new Date()).getFullYear(), calMonth=(new Date()).getMonth();
+function addEvent(){
+  const date = document.getElementById('evt-date').value || todayYMD();
+  const time = document.getElementById('evt-time').value || '';
+  const desc = (document.getElementById('evt-desc').value||'').trim();
+  if (!desc) return alert('Deskripsi harus diisi.');
+  store.events.push({ id: uid(), date, time, desc });
+  saveAll();
+  clearEventForm();
+  renderEvents();
+  renderCalendar();
+  renderDashboard();
+}
+function clearEventForm(){
+  document.getElementById('evt-date').value='';
+  document.getElementById('evt-time').value='';
+  document.getElementById('evt-desc').value='';
+}
+function delEvent(id){ delItem('events', id); renderEvents(); renderCalendar(); renderDashboard(); }
+function renderEvents(){
+  const wrap = document.getElementById('events-list');
+  const list = [...store.events].sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time));
+  wrap.innerHTML = list.length? '' : '<p class="muted">Belum ada jadwal.</p>';
+  for (const e of list) {
+    const div = document.createElement('div');
+    div.className='stat';
+    const t = (e.time||'').slice(0,5);
+    div.innerHTML = `<div><div class="muted">${fmtDate(e.date)} ${t?('• '+t):''}</div><div>${e.desc}</div></div><div><button class="btn danger" onclick="delEvent('${e.id}')">Hapus</button></div>`;
+    wrap.appendChild(div);
+  }
+}
+function navMonth(delta){
+  calMonth += delta;
+  if (calMonth<0){ calMonth=11; calYear--; }
+  if (calMonth>11){ calMonth=0; calYear++; }
+  renderCalendar();
+}
+function renderCalendar(){
+  const title = document.getElementById('cal-title');
+  const monthName = new Date(calYear, calMonth, 1).toLocaleString('id-ID', { month:'long', year:'numeric' });
+  title.textContent = monthName;
+  const cal = document.getElementById('calendar');
+  cal.innerHTML = '';
+  const first = new Date(calYear, calMonth, 1);
+  const startDay = (first.getDay()+6)%7; // make Monday=0
+  const days = new Date(calYear, calMonth+1, 0).getDate();
+  for (let i=0;i<startDay;i++){ const d=document.createElement('div'); d.className='cell'; cal.appendChild(d); }
+  const today = new Date();
+  for (let d=1; d<=days; d++){
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const ymd = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const has = store.events.some(e=>e.date===ymd);
+    const isToday = (today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d);
+    if (isToday) cell.classList.add('today');
+    cell.innerHTML = `<div class="d">${d}</div>${has?'<div class="dot"></div>':''}`;
+    cal.appendChild(cell);
+  }
+}
+
+// ==========================
+// PROFIL
+// ==========================
+function loadProfile(){
+  const p = store.profile || {};
+  document.getElementById('pf-name').value = p.name||'';
+  document.getElementById('pf-email').value = p.email||'';
+  document.getElementById('pf-phone').value = p.phone||'';
+  document.getElementById('pf-address').value = p.address||'';
+  document.getElementById('pf-notes').value = p.notes||'';
+}
+function saveProfile(){
+  store.profile = {
+    name: document.getElementById('pf-name').value.trim(),
+    email: document.getElementById('pf-email').value.trim(),
+    phone: document.getElementById('pf-phone').value.trim(),
+    address: document.getElementById('pf-address').value.trim(),
+    notes: document.getElementById('pf-notes').value.trim(),
+  };
+  saveAll();
+  alert('Profil disimpan.');
+  renderDashboard();
+}
+function clearProfile(){ if (confirm('Hapus profil?')) { store.profile = {}; saveAll(); loadProfile(); renderDashboard(); }}
+
+// ==========================
+// EKSPOR / IMPOR
+// ==========================
+function exportExcel(){
+  const wb = XLSX.utils.book_new();
+  // Finances
+  const finData = [['Tanggal','Jenis','Kategori','Deskripsi','Jumlah']].concat(
+    store.finances.map(f=>[f.date, f.type, f.cat||'', f.desc||'', f.amount])
+  );
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(finData), 'Keuangan');
+  // Notes
+  const noteData = [['Tanggal','Catatan']].concat(store.notes.map(n=>[new Date(n.dateISO).toLocaleString('id-ID'), n.text]));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(noteData), 'Catatan');
+  // Tasks
+  const taskData = [['Tanggal','Tugas','Selesai?']].concat(store.tasks.map(t=>[new Date(t.dateISO).toLocaleString('id-ID'), t.text, t.done?'Ya':'Tidak']));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(taskData), 'Tugas');
+  // Events
+  const evtData = [['Tanggal','Waktu','Deskripsi']].concat(store.events.map(e=>[e.date, e.time, e.desc]));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(evtData), 'Agenda');
+  // Profile
+  const p = store.profile||{};
+  const profData = [['Field','Nilai'], ['Nama', p.name||''], ['Email', p.email||''], ['HP', p.phone||''], ['Alamat', p.address||''], ['Catatan', p.notes||'']];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(profData), 'Profil');
+
+  const wbout = XLSX.write(wb, { bookType:'xlsx', type:'array' });
+  saveAs(new Blob([wbout], {type:'application/octet-stream'}), 'Personal-Management.xlsx');
+}
+
+async function exportWord(){
+  const { Document, Packer, Paragraph, HeadingLevel, TextRun } = window.docx;
+  const p = store.profile||{};
+  function H(t){ return new Paragraph({ text: t, heading: HeadingLevel.HEADING_2 }); }
+  function para(t){ return new Paragraph({ children: [new TextRun(t)] }); }
+
+  const sections = [];
+  sections.push(H('Profil')); 
+  sections.push(para(`Nama: ${p.name||''}`));
+  sections.push(para(`Email: ${p.email||''}`));
+  sections.push(para(`HP: ${p.phone||''}`));
+  sections.push(para(`Alamat: ${p.address||''}`));
+  sections.push(para(`Catatan: ${p.notes||''}`));
+
+  sections.push(H('Keuangan'));
+  for (const f of store.finances) sections.push(para(`${fmtDate(f.date)} | ${f.type==='income'?'Pemasukan':'Pengeluaran'} | ${f.cat||'-'} | ${f.desc||'-'} | ${IDR.format(f.amount)}`));
+
+  sections.push(H('Catatan'));
+  for (const n of store.notes) sections.push(para(`${new Date(n.dateISO).toLocaleString('id-ID')} – ${n.text}`));
+
+  sections.push(H('Tugas'));
+  for (const t of store.tasks) sections.push(para(`[${t.done?'x':' '}] ${t.text}`));
+
+  sections.push(H('Agenda'));
+  for (const e of store.events) sections.push(para(`${fmtDate(e.date)} ${e.time||''} – ${e.desc}`));
+
+  const doc = new Document({ sections: [{ properties: {}, children: sections }] });
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, 'Personal-Management.docx');
+}
+
+// JSON backup / restore
+function backupJSON(){
+  const data = JSON.stringify(store, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  saveAs(blob, 'Personal-Management.json');
+}
+function importJSONFile(file){
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      for (const k of Object.keys(store)) store[k] = data[k] || (Array.isArray(store[k])? [] : {});
+      saveAll();
+      // refresh UI
+      loadProfile(); renderFinance(); renderNotes(); renderTasks(); renderEvents(); renderCalendar(); renderDashboard();
+      alert('Impor selesai.');
+    } catch (e) { alert('File tidak valid.'); }
+  };
+  reader.readAsText(file);
+}
+function resetAll(){
+  if (!confirm('Yakin ingin menghapus semua data?')) return;
+  for (const k of Object.keys(store)) store[k] = Array.isArray(store[k])? [] : {};
+  saveAll();
+  // refresh UI
+  loadProfile(); renderFinance(); renderNotes(); renderTasks(); renderEvents(); renderCalendar(); renderDashboard();
+  alert('Semua data direset.');
+}
+
+// Generic helpers
+function delItem(key, id){
+  const arr = store[key];
+  const i = arr.findIndex(x=>x.id===id);
+  if (i>-1){ arr.splice(i,1); saveAll(); }
+}
+function deleteAll(key){
+  if (!confirm('Hapus semua?')) return;
+  store[key] = [];
+  saveAll();
+  if (key==='finances') renderFinance();
+  if (key==='notes') renderNotes();
+  if (key==='tasks') renderTasks();
+  if (key==='events') { renderEvents(); renderCalendar(); }
+  renderDashboard();
+}
+
+// Header buttons wiring
+document.getElementById('btn-backup-json').addEventListener('click', backupJSON);
+for (const id of ['import-json','import-json-2']){
+  const el = document.getElementById(id);
+  el.addEventListener('change', (e)=>{ const f = e.target.files?.[0]; if (f) importJSONFile(f); e.target.value=''; });
+}
+
+// INIT
+loadAll();
+renderDashboard();
+renderFinance();
+renderNotes();
+renderTasks();
+renderEvents();
+renderCalendar();
+loadProfile();
+
+// Pre-fill if empty (optional UX)
+(function seed(){
+  if (store.finances.length===0) {
+    store.finances.push(
+      {id:uid(), date: todayYMD(), type:'income', cat:'Gaji', desc:'Gaji awal', amount: 1000000},
+      {id:uid(), date: todayYMD(), type:'expense', cat:'Makan', desc:'Sarapan', amount: 20000}
+    );
+  }
+  saveAll();
+})();
+</script>
+</body>
+</html>

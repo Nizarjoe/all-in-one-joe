@@ -3,54 +3,53 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Personal Management • All-in-One</title>
+  <title>Personal Management – All-in-One (Final)</title>
 
-  <!-- Chart.js + XLSX + docx via CDN -->
+  <!-- Fonts & libs -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
 
   <style>
-    /* -------------------------
-       Modern Minimal Design
-       ------------------------- */
     :root{
-      --bg:#0f1724;
-      --panel:#0b1220;
-      --muted:#98a0b3;
-      --text:#e6eef8;
-      --card:#0d1623;
-      --accent:#38bdf8;    /* sky-ish */
-      --accent-2:#60a5fa;
-      --success:#22c55e;
-      --danger:#ef4444;
+      --bg:#0f1724; --panel:#0b1220; --card:#0d1623;
+      --muted:#98a0b3; --text:#e6eef8;
+      --accent:#06b6d4; --accent-2:#60a5fa;
+      --success:#22c55e; --danger:#ef4444;
       --glass: rgba(255,255,255,0.03);
       --radius:12px;
       --gap:14px;
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
       font-size:16px;
     }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg) 0%, #061226 100%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071227 0%, #081226 100%);color:var(--text)}
     a{color:inherit}
-    .wrap{max-width:1100px;margin:20px auto;padding:20px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .wrap{max-width:1150px;margin:20px auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px}
     .brand{display:flex;gap:12px;align-items:center}
-    .logo{
-      width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#012; font-weight:800;
-      box-shadow:0 6px 18px rgba(34,197,94,0.06);
-    }
+    .logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#04111a;font-weight:800;box-shadow:0 8px 30px rgba(6,182,212,0.08)}
     h1{font-size:18px;margin:0}
+    .tiny{font-size:13px;color:var(--muted)}
     .controls{display:flex;gap:8px;align-items:center}
     .btn{background:var(--glass);border:1px solid rgba(255,255,255,0.04);color:var(--text);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
-    .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#04202a;border:none}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#021; border:none}
     .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04)}
-    nav.tabs{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+    nav.tabs{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
     nav.tabs button{background:transparent;border:1px solid transparent;padding:10px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
-    nav.tabs button.active{color:var(--text);background:linear-gradient(90deg,rgba(255,255,255,0.03),transparent);border:1px solid rgba(255,255,255,0.04)}
-    .subtoggles{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+    nav.tabs button.active{color:var(--text);background:linear-gradient(90deg,rgba(255,255,255,0.02),transparent);border:1px solid rgba(255,255,255,0.03)}
 
-    main{margin-top:18px}
+    .subtog{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .switch{display:inline-flex;align-items:center;gap:8px}
+    .track{width:46px;height:26px;background:#061226;border-radius:999px;border:1px solid rgba(255,255,255,0.04);position:relative;cursor:pointer}
+    .dot{width:18px;height:18px;border-radius:50%;background:#e6eef8;position:absolute;top:3px;left:4px;transition:all .18s}
+    .switch input{display:none}
+    .switch input:checked + .track{background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+    .switch input:checked + .track .dot{left:24px;background:#011927;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+
+    main{margin-top:16px}
     section{display:none}
     section.active{display:block}
 
@@ -59,42 +58,30 @@
     .grid-2{grid-template-columns:repeat(2,1fr)}
     @media (max-width:920px){ .grid-3{grid-template-columns:1fr} .grid-2{grid-template-columns:1fr} }
 
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.03); padding:16px; border-radius:var(--radius); box-shadow: 0 6px 30px rgba(2,6,23,0.5); }
-    .card h3{margin:0 0 8px 0;color:var(--muted);font-size:14px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:16px;border-radius:var(--radius);box-shadow:0 6px 30px rgba(2,6,23,0.6)}
+    .card h3{margin:0 0 8px;color:var(--muted);font-size:14px}
     .muted{color:var(--muted);font-size:13px}
     .stat-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
     .stat{flex:1;background:rgba(255,255,255,0.02);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
     .stat strong{display:block;font-size:18px;margin-top:6px;color:var(--text)}
 
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
     input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:var(--text);outline:none}
-    label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
     table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
     th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.02);text-align:left;color:var(--muted)}
     tr td strong{color:var(--text)}
     .pill{padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,0.03);font-size:13px;color:var(--muted)}
+    footer{text-align:center;color:var(--muted);margin-top:26px;font-size:13px}
 
-    footer{margin-top:26px;text-align:center;color:var(--muted);font-size:13px}
+    /* login card */
+    .login-wrap{min-height:70vh;display:flex;align-items:center;justify-content:center}
+    .login-card{width:100%;max-width:420px;padding:22px;border-radius:14px;background:linear-gradient(180deg,#071428,#071829);box-shadow:0 10px 40px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+    .login-card h2{margin:0 0 12px 0;font-size:20px;color:var(--text)}
+    .muted-note{font-size:13px;color:var(--muted);margin-top:8px}
 
-    /* Login modal */
-    .login-wrap{min-height:72vh;display:flex;align-items:center;justify-content:center}
-    .login-card{width:100%;max-width:420px;padding:22px;border-radius:14px;background:linear-gradient(180deg,#071428,#0b1a2b);box-shadow:0 10px 40px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
-    .login-card h2{margin:0 0 14px 0;font-size:20px}
-    .small{font-size:13px;color:var(--muted)}
-
-    /* Toggle switch */
-    .switch{display:inline-flex;align-items:center;gap:8px}
-    .switch input{display:none}
-    .switch .track{width:48px;height:26px;background:#061226;border-radius:999px;border:1px solid rgba(255,255,255,0.04);position:relative;cursor:pointer}
-    .switch .dot{width:18px;height:18px;border-radius:50%;background:#e6eef8;position:absolute;top:3px;left:4px;transition:all .18s ease}
-    .switch input:checked + .track{background:linear-gradient(90deg,var(--accent),var(--accent-2))}
-    .switch input:checked + .track .dot{left:26px;background:#012;box-shadow:0 6px 20px rgba(3,12,28,0.45)}
-
-    /* helper */
-    .row{display:flex;gap:12px;align-items:center}
     .right{margin-left:auto}
-    .muted-tip{font-size:12px;color:var(--muted);margin-top:8px}
-    .tiny{font-size:12px;color:var(--muted)}
     .icon-btn{background:transparent;border:none;color:var(--muted);cursor:pointer;padding:6px;border-radius:8px}
+    .small{font-size:13px;color:var(--muted)}
   </style>
 </head>
 <body>
@@ -104,288 +91,359 @@
         <div class="logo">PM</div>
         <div>
           <h1>Personal Management</h1>
-          <div class="tiny">All-in-one • ringan • offline</div>
+          <div class="tiny">All-in-one • Offline • Single-file</div>
         </div>
       </div>
       <div class="controls">
-        <button id="btn-backup" class="btn ghost" title="Backup JSON">Backup</button>
-        <label for="import-json" class="btn" style="cursor:pointer">Import</label>
-        <input id="import-json" type="file" accept="application/json" style="display:none">
-        <button id="btn-logout" class="btn ghost" title="Logout">Logout</button>
+        <button id="btn-backup" class="btn">Backup JSON</button>
+        <label for="import-json" class="btn">Import JSON</label>
+        <input id="import-json" type="file" accept="application/json" style="display:none" />
+        <button id="btn-logout" class="btn ghost">Logout</button>
       </div>
     </header>
 
-    <!-- top tabs -->
     <nav class="tabs" id="tabs"></nav>
 
-    <!-- toggles for visualizations -->
-    <div class="subtoggles">
-      <label class="switch"><input id="toggle-fin" type="checkbox" checked><span class="track"><span class="dot"></span></span><span class="small">Finance Chart</span></label>
-      <label class="switch"><input id="toggle-tasks" type="checkbox" checked><span class="track"><span class="dot"></span></span><span class="small">Tasks Chart</span></label>
-      <label class="switch"><input id="toggle-agenda" type="checkbox" checked><span class="track"><span class="dot"></span></span><span class="small">Agenda Chart</span></label>
+    <div class="subtog">
+      <label class="switch"><input id="toggle-fin" type="checkbox" checked><span class="track"><span class="dot"></span></span><span class="small">Finance</span></label>
+      <label class="switch"><input id="toggle-tasks" type="checkbox" checked><span class="track"><span class="dot"></span></span><span class="small">Tasks</span></label>
+      <label class="switch"><input id="toggle-agenda" type="checkbox" checked><span class="track"><span class="dot"></span></span><span class="small">Agenda</span></label>
+      <div class="right small">PIN & Settings → <button id="btn-settings" class="btn ghost">Settings</button></div>
     </div>
 
     <main>
-      <!-- LOGIN -->
-      <div id="login-screen" class="login-wrap" style="display:none">
+      <!-- LOGIN / REGISTER / PIN -->
+      <div id="login-area" class="login-wrap" style="display:none">
         <div class="login-card">
           <h2>Masuk ke Personal Management</h2>
-          <div class="small">Silakan login atau daftar akun cepat (disimpan localStorage).</div>
-          <div style="margin-top:12px">
-            <label class="tiny">Username</label>
-            <input id="login-user" placeholder="username" />
-            <label class="tiny">Password</label>
-            <input id="login-pass" type="password" placeholder="password" />
-            <div style="display:flex;gap:8px;margin-top:10px">
-              <button id="btn-login" class="btn primary">Masuk</button>
-              <button id="btn-register" class="btn">Daftar</button>
-              <button id="btn-guest" class="btn ghost">Guest</button>
-            </div>
-            <div class="muted-tip">Catatan: akun tersimpan di local browser (bukan aman untuk data sensitif).</div>
+          <label>Username</label>
+          <input id="login-user" placeholder="Username" />
+          <label>Password</label>
+          <input id="login-pass" type="password" placeholder="Password" />
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button id="btn-login" class="btn primary">Login</button>
+            <button id="btn-register" class="btn">Register</button>
+            <button id="btn-guest" class="btn ghost">Guest</button>
           </div>
+          <div class="muted-note">Akun disimpan di browser (localStorage). Tidak cocok untuk data sensitif.</div>
         </div>
       </div>
 
-      <!-- APP SECTIONS -->
-      <section id="tab-dashboard" class="active">
-        <div class="grid grid-3">
-          <div class="card">
-            <h3>Ringkasan Keuangan</h3>
-            <div class="stat-row">
-              <div class="stat"><div class="muted">Saldo</div><strong id="dash-saldo">Rp 0</strong></div>
-              <div class="stat"><div class="muted">Pemasukan (Bln)</div><strong id="dash-income">Rp 0</strong></div>
-              <div class="stat"><div class="muted">Pengeluaran (Bln)</div><strong id="dash-expense">Rp 0</strong></div>
-            </div>
+      <div id="pin-area" class="login-wrap" style="display:none">
+        <div class="login-card">
+          <h2>Masukkan PIN</h2>
+          <label>PIN (4–6 digit)</label>
+          <input id="input-pin" type="password" placeholder="PIN" />
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button id="btn-pin-submit" class="btn primary">Masuk</button>
+            <button id="btn-pin-reset" class="btn ghost">Lupa PIN?</button>
           </div>
-          <div class="card">
-            <h3>Tugas & Catatan</h3>
-            <div class="stat-row">
-              <div class="stat"><div class="muted">Tugas</div><strong id="dash-tasks">0</strong></div>
-              <div class="stat"><div class="muted">Catatan</div><strong id="dash-notes">0</strong></div>
-              <div class="stat"><div class="muted">Agenda</div><strong id="dash-agenda">0</strong></div>
-            </div>
-          </div>
-          <div class="card">
-            <h3>Aksi Cepat</h3>
-            <div style="display:flex;flex-direction:column;gap:10px">
-              <button class="btn primary" onclick="switchTab('keuangan')">Tambah Transaksi</button>
-              <button class="btn" onclick="switchTab('notes')">Tambah Catatan</button>
-              <button class="btn" onclick="switchTab('tasks')">Tambah Tugas</button>
-              <button class="btn ghost" onclick="switchTab('visual')">Lihat Visualisasi</button>
-            </div>
-          </div>
+          <div class="muted-note">PIN wajib untuk membuka aplikasi setelah login.</div>
         </div>
+      </div>
 
-        <div class="grid grid-2" style="margin-top:14px">
-          <div class="card">
-            <h3>Grafik Bulanan</h3>
-            <canvas id="dash-chart" height="140"></canvas>
-          </div>
-          <div class="card">
-            <h3>Agenda Mendatang</h3>
-            <div id="upcoming-list" class="muted">Belum ada agenda.</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- KEUANGAN -->
-      <section id="tab-keuangan">
-        <div class="card">
-          <h3>Input Transaksi</h3>
+      <!-- APP -->
+      <section id="app-main" style="display:none">
+        <!-- Dashboard -->
+        <section id="tab-dashboard" class="active">
           <div class="grid grid-3">
-            <div>
-              <label>Tanggal</label>
-              <input type="date" id="fin-date" />
+            <div class="card">
+              <h3>Ringkasan Keuangan</h3>
+              <div class="stat-row">
+                <div class="stat"><div class="muted">Total Saldo</div><strong id="dash-saldo">Rp 0</strong></div>
+                <div class="stat"><div class="muted">Pemasukan (Bln)</div><strong id="dash-income">Rp 0</strong></div>
+                <div class="stat"><div class="muted">Pengeluaran (Bln)</div><strong id="dash-expense">Rp 0</strong></div>
+              </div>
             </div>
-            <div>
-              <label>Jenis</label>
-              <select id="fin-type"><option value="income">Pemasukan</option><option value="expense">Pengeluaran</option></select>
+            <div class="card">
+              <h3>Tugas & Catatan</h3>
+              <div class="stat-row">
+                <div class="stat"><div class="muted">Tugas</div><strong id="dash-tasks">0</strong></div>
+                <div class="stat"><div class="muted">Catatan</div><strong id="dash-notes">0</strong></div>
+                <div class="stat"><div class="muted">Agenda</div><strong id="dash-events">0</strong></div>
+              </div>
             </div>
-            <div>
-              <label>Kategori</label>
-              <input id="fin-cat" placeholder="Gaji, Makan, Transport..." />
-            </div>
-            <div style="grid-column:1/3">
-              <label>Deskripsi</label>
-              <input id="fin-desc" placeholder="Contoh: Gaji bulanan" />
-            </div>
-            <div>
-              <label>Jumlah</label>
-              <input id="fin-amount" type="number" placeholder="0" />
-            </div>
-            <div class="row" style="grid-column:1/3">
-              <button class="btn primary" onclick="addTransaction()">Simpan</button>
-              <button class="btn" onclick="clearFinanceForm()">Reset</button>
-              <button class="btn ghost right" onclick="deleteAll('finances')">Hapus Semua</button>
+            <div class="card">
+              <h3>Aksi Cepat</h3>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <button class="btn primary" onclick="goTo('keuangan')">Tambah Transaksi</button>
+                <button class="btn" onclick="goTo('notes')">Tambah Catatan</button>
+                <button class="btn" onclick="goTo('tasks')">Tambah Tugas</button>
+                <button class="btn ghost" onclick="goTo('visual')">Lihat Visualisasi</button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="card" style="margin-top:12px">
-          <h3>Daftar Transaksi</h3>
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
-            <label class="tiny">Filter Bulan</label>
-            <select id="fin-filter" onchange="renderFinance()"></select>
-            <div class="right muted-tip">Saldo sekarang: <strong id="fin-sum">Rp 0</strong></div>
+          <div class="grid grid-2" style="margin-top:14px">
+            <div class="card">
+              <h3>Grafik Bulanan</h3>
+              <canvas id="dash-chart" height="140"></canvas>
+            </div>
+            <div class="card">
+              <h3>Agenda Mendatang</h3>
+              <div id="upcoming-list" class="muted">Tidak ada agenda.</div>
+            </div>
           </div>
-          <div style="overflow:auto">
-            <table>
-              <thead><tr><th>Tanggal</th><th>Jenis</th><th>Kategori</th><th>Deskripsi</th><th>Jumlah</th><th></th></tr></thead>
-              <tbody id="fin-tbody"></tbody>
-            </table>
+        </section>
+
+        <!-- Keuangan -->
+        <section id="tab-keuangan">
+          <div class="card">
+            <h3>Input Transaksi</h3>
+            <div class="grid grid-3">
+              <div>
+                <label>Tanggal</label><input id="fin-date" type="date" />
+              </div>
+              <div>
+                <label>Jenis</label>
+                <select id="fin-type"><option value="income">Pemasukan</option><option value="expense">Pengeluaran</option></select>
+              </div>
+              <div>
+                <label>Kategori</label><input id="fin-cat" placeholder="Gaji, Makan..." />
+              </div>
+              <div style="grid-column:1/3"><label>Deskripsi</label><input id="fin-desc" placeholder="Catatan..." /></div>
+              <div><label>Jumlah</label><input id="fin-amount" type="number" placeholder="0" /></div>
+              <div style="grid-column:1/3" class="row">
+                <button class="btn primary" onclick="addTransaction()">Simpan</button>
+                <button class="btn" onclick="clearFinanceForm()">Reset</button>
+                <button class="btn ghost right" onclick="deleteAll('finances')">Hapus Semua</button>
+              </div>
+            </div>
           </div>
-        </div>
+
+          <div class="card" style="margin-top:12px">
+            <h3>Daftar Transaksi</h3>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+              <label class="tiny">Filter Bulan</label>
+              <select id="fin-filter" onchange="renderFinance()"></select>
+              <div class="right muted">Saldo: <strong id="fin-sum">Rp 0</strong></div>
+            </div>
+            <div style="overflow:auto">
+              <table><thead><tr><th>Tanggal</th><th>Jenis</th><th>Kategori</th><th>Deskripsi</th><th>Jumlah</th><th></th></tr></thead><tbody id="fin-tbody"></tbody></table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Notes -->
+        <section id="tab-notes">
+          <div class="card">
+            <h3>Catatan Harian</h3>
+            <label>Isi Catatan</label><textarea id="note-text" rows="3" placeholder="Tulis catatan..."></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px"><button class="btn primary" onclick="addNote()">Tambah Catatan</button><button class="btn ghost" onclick="deleteAll('notes')">Hapus Semua</button></div>
+          </div>
+          <div class="card"><h3>Daftar Catatan</h3><div id="notes-list" class="muted">Belum ada catatan.</div></div>
+        </section>
+
+        <!-- Tasks -->
+        <section id="tab-tasks">
+          <div class="card">
+            <h3>Tambah Tugas</h3>
+            <div class="grid grid-3">
+              <div><label>Tugas</label><input id="task-text" placeholder="Tugas baru..." /></div>
+              <div><label>Tanggal</label><input id="task-date" type="date" /></div>
+              <div class="row" style="align-items:end"><button class="btn primary" onclick="addTask()">Tambah</button><button class="btn ghost" onclick="deleteAll('tasks')">Hapus Semua</button></div>
+            </div>
+          </div>
+          <div class="card"><h3>Daftar Tugas</h3><div id="tasks-list" class="muted">Belum ada tugas.</div></div>
+        </section>
+
+        <!-- Agenda -->
+        <section id="tab-agenda">
+          <div class="card">
+            <h3>Tambah Jadwal</h3>
+            <div class="grid grid-2">
+              <div><label>Tanggal</label><input id="evt-date" type="date" /></div>
+              <div><label>Waktu</label><input id="evt-time" type="time" /></div>
+              <div style="grid-column:1/-1"><label>Deskripsi</label><input id="evt-desc" placeholder="Contoh: Meeting proyek" /></div>
+              <div style="grid-column:1/-1" class="row"><button class="btn primary" onclick="addEvent()">Simpan</button><button class="btn ghost" onclick="deleteAll('events')">Hapus Semua</button></div>
+            </div>
+          </div>
+          <div class="card"><h3>Daftar Agenda</h3><div id="events-list" class="muted">Belum ada jadwal.</div></div>
+        </section>
+
+        <!-- Profil -->
+        <section id="tab-profil">
+          <div class="card">
+            <h3>Profil</h3>
+            <div class="grid grid-2">
+              <div><label>Nama</label><input id="pf-name" /></div>
+              <div><label>Email</label><input id="pf-email" /></div>
+              <div style="grid-column:1/-1"><label>Alamat</label><input id="pf-address" /></div>
+              <div style="grid-column:1/-1"><label>Catatan</label><textarea id="pf-notes" rows="3"></textarea></div>
+              <div style="grid-column:1/-1" class="row"><button class="btn primary" onclick="saveProfile()">Simpan Profil</button><button class="btn" onclick="loadProfile()">Muat</button><button class="btn ghost" onclick="clearProfile()">Hapus</button></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Visual -->
+        <section id="tab-visual">
+          <div class="card">
+            <h3>Visualisasi Data</h3>
+            <div id="visual-charts" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:8px">
+              <div id="vc-fin" class="card"><h3 class="tiny muted">Pengeluaran per Kategori</h3><canvas id="chart-finance" height="200"></canvas></div>
+              <div id="vc-summary" class="card"><h3 class="tiny muted">Ringkasan Bulanan</h3><canvas id="chart-summary" height="200"></canvas></div>
+              <div id="vc-tasks" class="card"><h3 class="tiny muted">Tugas Over Time</h3><canvas id="chart-tasks" height="160"></canvas></div>
+              <div id="vc-agenda" class="card"><h3 class="tiny muted">Agenda Timeline</h3><canvas id="chart-agenda" height="160"></canvas></div>
+            </div>
+          </div>
+        </section>
       </section>
-
-      <!-- CATATAN -->
-      <section id="tab-notes">
-        <div class="card">
-          <h3>Catatan Harian</h3>
-          <label>Isi Catatan</label>
-          <textarea id="note-text" rows="3" placeholder="Tulis catatan..."></textarea>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn primary" onclick="addNote()">Tambah Catatan</button>
-            <button class="btn ghost" onclick="deleteAll('notes')">Hapus Semua</button>
-          </div>
-        </div>
-        <div class="card">
-          <h3>Daftar Catatan</h3>
-          <div id="notes-list" class="muted">Belum ada catatan.</div>
-        </div>
-      </section>
-
-      <!-- TUGAS -->
-      <section id="tab-tasks">
-        <div class="card">
-          <h3>Tambah Tugas</h3>
-          <div class="grid grid-3">
-            <div><label>Tugas</label><input id="task-text" placeholder="Tugas baru..." /></div>
-            <div><label>Tanggal</label><input id="task-date" type="date" /></div>
-            <div class="row" style="align-items:end"><button class="btn primary" onclick="addTask()">Tambah</button><button class="btn ghost" onclick="deleteAll('tasks')">Hapus Semua</button></div>
-          </div>
-        </div>
-        <div class="card">
-          <h3>Daftar Tugas</h3>
-          <div id="tasks-list" class="muted">Belum ada tugas.</div>
-        </div>
-      </section>
-
-      <!-- AGENDA -->
-      <section id="tab-agenda">
-        <div class="card">
-          <h3>Tambah Jadwal</h3>
-          <div class="grid grid-2">
-            <div><label>Tanggal</label><input id="evt-date" type="date" /></div>
-            <div><label>Waktu</label><input id="evt-time" type="time" /></div>
-            <div style="grid-column:1/-1"><label>Deskripsi</label><input id="evt-desc" placeholder="Contoh: Meeting proyek" /></div>
-            <div style="grid-column:1/-1" class="row"><button class="btn primary" onclick="addEvent()">Simpan</button><button class="btn ghost" onclick="deleteAll('events')">Hapus Semua</button></div>
-          </div>
-        </div>
-        <div class="card">
-          <h3>Daftar Agenda</h3>
-          <div id="events-list" class="muted">Belum ada jadwal.</div>
-        </div>
-      </section>
-
-      <!-- PROFIL -->
-      <section id="tab-profil">
-        <div class="card">
-          <h3>Profil</h3>
-          <div class="grid grid-2">
-            <div><label>Nama</label><input id="pf-name" /></div>
-            <div><label>Email</label><input id="pf-email" /></div>
-            <div style="grid-column:1/-1"><label>Alamat</label><input id="pf-address" /></div>
-            <div style="grid-column:1/-1"><label>Catatan</label><textarea id="pf-notes" rows="3"></textarea></div>
-            <div style="grid-column:1/-1" class="row"><button class="btn primary" onclick="saveProfile()">Simpan Profil</button><button class="btn" onclick="loadProfile()">Muat</button><button class="btn ghost" onclick="clearProfile()">Hapus</button></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- VISUALISASI -->
-      <section id="tab-visual">
-        <div class="card">
-          <h3>Visualisasi Data</h3>
-          <div id="visual-charts" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:8px;gap:12px">
-            <div id="vc-fin" class="card"><h3 class="tiny muted">Pengeluaran per Kategori</h3><canvas id="chart-finance" height="180"></canvas></div>
-            <div id="vc-summary" class="card"><h3 class="tiny muted">Ringkasan Pemasukan vs Pengeluaran</h3><canvas id="chart-summary" height="180"></canvas></div>
-            <div id="vc-tasks" class="card"><h3 class="tiny muted">Tugas Over Time</h3><canvas id="chart-tasks" height="140"></canvas></div>
-            <div id="vc-agenda" class="card"><h3 class="tiny muted">Agenda Timeline</h3><canvas id="chart-agenda" height="140"></canvas></div>
-          </div>
-        </div>
-      </section>
-
     </main>
 
-    <footer>Made with ♥ — Single-file, offline-first. Data stored locally in browser.</footer>
+    <footer>Made with ♥ — Single-file, offline-first. Data stored in <strong>localStorage</strong>.</footer>
   </div>
 
 <script>
-/* ==================================================
-   App: Personal Management (single-file)
-   Features: login, finances, notes, tasks, events,
-             profile, visualization, export/import.
-   Author: generated (improved)
-   ================================================== */
+/* =========================
+   Personal Management - Final
+   Single-file index.html
+   ========================= */
 
-/* ------------------------------
-   App State & Storage
-   ------------------------------ */
-const defaultStore = {
+/* --------- Storage Keys ---------- */
+const STORE_KEY = 'pm_store_v1';
+const AUTH_KEY  = 'pm_auth_v1';
+const PIN_KEY   = 'pm_pin_v1';
+
+/* --------- Default Store -------- */
+const DEFAULT_STORE = {
   finances: [], // {id,date,type,cat,desc,amount}
-  notes: [],    // {id, text, dateISO}
-  tasks: [],    // {id, text, date}
-  events: [],   // {id, date, time, desc}
+  notes: [],    // {id,text,dateISO}
+  tasks: [],    // {id,text,date,done?}
+  events: [],   // {id,date,time,desc}
   profile: {}   // {name,email,address,notes}
 };
-let store = JSON.parse(localStorage.getItem('pm_store') || 'null') || defaultStore;
-function saveAll(){ localStorage.setItem('pm_store', JSON.stringify(store)); }
 
-/* ------------------------------
-   Auth (simple)
-   ------------------------------ */
-function showLoginScreen(show){
-  document.getElementById('login-screen').style.display = show ? 'flex' : 'none';
-  // hide app tabs while login
-  if(show){
-    document.querySelectorAll('nav.tabs, main, .subtoggles, .controls').forEach(el=>el && (el.style.display='none'));
-  } else {
-    document.querySelectorAll('nav.tabs, main, .subtoggles, .controls').forEach(el=>el && (el.style.display='flex'));
-    // ensure main visible
-  }
-}
-const AUTH_KEY = 'pm_auth';
-function initAuth(){
+/* --------- Utility -------- */
+const IDR = new Intl.NumberFormat('id-ID', { style:'currency', currency:'IDR', maximumFractionDigits:0 });
+function uid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+function todayYMD(){ return new Date().toISOString().slice(0,10); }
+function fmtDate(ymd){ if(!ymd) return '-'; const d = new Date(ymd + 'T00:00:00'); return d.toLocaleDateString('id-ID'); }
+
+/* --------- State -------- */
+let store = JSON.parse(localStorage.getItem(STORE_KEY) || 'null') || DEFAULT_STORE;
+function saveAll(){ localStorage.setItem(STORE_KEY, JSON.stringify(store)); }
+
+/* --------- Charts refs -------- */
+let dashChart, chartFinance, chartSummary, chartTasks, chartAgenda;
+
+/* --------- Auth Flow -------- */
+function showElement(el, show=true){ if(!el) return; el.style.display = show ? '' : 'none'; }
+function initAuthUI(){
+  // If auth exists, show PIN screen; else show login
   const auth = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null');
-  if(!auth){ showLoginScreen(true); } else { showLoginScreen(false); initApp(); }
+  if(!auth){ showLogin(); } else { showPin(); }
 }
-document.getElementById('btn-login')?.addEventListener('click', ()=>{
+function showLogin(){
+  showElement(document.getElementById('login-area'), true);
+  showElement(document.getElementById('pin-area'), false);
+  showElement(document.getElementById('app-main'), false);
+  buildTabs(); // still build tabs but app hidden
+}
+function showPin(){
+  showElement(document.getElementById('login-area'), false);
+  showElement(document.getElementById('pin-area'), true);
+  showElement(document.getElementById('app-main'), false);
+}
+function showApp(){
+  showElement(document.getElementById('login-area'), false);
+  showElement(document.getElementById('pin-area'), false);
+  showElement(document.getElementById('app-main'), true);
+  switchTab('dashboard');
+  renderAll();
+}
+
+/* Register / Login handlers */
+document.getElementById('btn-register').addEventListener('click', ()=>{
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if(!u || !p) return alert('Isi username & password untuk registrasi.');
+  // Ask for PIN during register
+  const pin = prompt('Buat PIN (4–6 digit) untuk akses cepat (disimpan di browser):', '1234');
+  if(pin === null) return; // cancelled
+  if(!/^\d{4,6}$/.test(pin)) return alert('PIN harus 4–6 digit angka.');
+  localStorage.setItem(AUTH_KEY, JSON.stringify({ username: u, password: p }));
+  localStorage.setItem(PIN_KEY, pin);
+  alert('Registrasi berhasil — silakan login.');
+  showPin();
+});
+document.getElementById('btn-login').addEventListener('click', ()=>{
   const u = document.getElementById('login-user').value.trim();
   const p = document.getElementById('login-pass').value;
   const auth = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null');
-  if(auth && auth.username === u && auth.password === p){
-    showLoginScreen(false); initApp(); return;
-  }
-  alert('Akun tidak ditemukan atau password salah. Silakan daftar (Register) jika belum punya.');
+  if(!auth) return alert('Akun belum terdaftar. Silakan daftar.');
+  if(auth.username === u && auth.password === p){
+    // show pin
+    showPin();
+  } else alert('Username atau password salah.');
 });
-document.getElementById('btn-register')?.addEventListener('click', ()=>{
-  const u = document.getElementById('login-user').value.trim();
-  const p = document.getElementById('login-pass').value;
-  if(!u || !p){ alert('Isi username & password untuk daftar'); return; }
-  localStorage.setItem(AUTH_KEY, JSON.stringify({username:u, password:p}));
-  alert('Registrasi berhasil. Silakan masuk menggunakan akun tersebut.');
-});
-document.getElementById('btn-guest')?.addEventListener('click', ()=>{
-  // create guest auto account
-  localStorage.setItem(AUTH_KEY, JSON.stringify({username:'guest', password:'guest'}));
-  showLoginScreen(false); initApp();
-});
-document.getElementById('btn-logout')?.addEventListener('click', ()=>{
-  if(confirm('Logout?')){ localStorage.removeItem(AUTH_KEY); showLoginScreen(true); }
+document.getElementById('btn-guest').addEventListener('click', ()=>{
+  // create guest quick account
+  localStorage.setItem(AUTH_KEY, JSON.stringify({ username:'guest', password:'guest' }));
+  localStorage.setItem(PIN_KEY, '1234');
+  alert('Masuk sebagai guest. PIN default: 1234');
+  showPin();
 });
 
-/* ------------------------------
-   Tabs init
-   ------------------------------ */
+/* PIN handlers */
+document.getElementById('btn-pin-submit').addEventListener('click', ()=>{
+  const input = document.getElementById('input-pin').value.trim();
+  const saved = localStorage.getItem(PIN_KEY) || '1234';
+  if(input === saved){
+    showApp();
+  } else alert('PIN salah.');
+});
+document.getElementById('btn-pin-reset').addEventListener('click', ()=>{
+  if(!confirm('Reset PIN? Anda harus login kembali setelah reset.')) return;
+  // remove pin and auth
+  localStorage.removeItem(PIN_KEY);
+  localStorage.removeItem(AUTH_KEY);
+  alert('PIN & akun dihapus. Silakan daftar ulang atau login baru.');
+  showLogin();
+});
+
+/* Logout & header actions */
+document.getElementById('btn-logout').addEventListener('click', ()=>{
+  if(!confirm('Logout dari aplikasi?')) return;
+  // keep auth but just return to login screen for safety
+  showLogin();
+});
+document.getElementById('btn-backup').addEventListener('click', backupJSON);
+document.getElementById('import-json').addEventListener('change', (e)=>{
+  const f = e.target.files?.[0];
+  if(f) importJSON(f);
+  e.target.value='';
+});
+
+/* Settings modal (simple prompt flows) */
+document.getElementById('btn-settings').addEventListener('click', ()=>{
+  const opt = prompt('Settings:\n1 = Ubah PIN\n2 = Reset Akun (hapus data & akun)\n3 = Hapus semua data\nPilih nomor:');
+  if(!opt) return;
+  if(opt==='1'){
+    const cur = prompt('Masukkan PIN sekarang:');
+    if(cur !== (localStorage.getItem(PIN_KEY) || '1234')) return alert('PIN sekarang salah.');
+    const nw = prompt('Masukkan PIN baru (4–6 digit):');
+    if(!/^\d{4,6}$/.test(nw)) return alert('PIN tidak valid.');
+    localStorage.setItem(PIN_KEY, nw);
+    alert('PIN berhasil diubah.');
+  } else if(opt==='2'){
+    if(!confirm('Reset akun: menghapus akun & semua data di browser?')) return;
+    localStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(PIN_KEY);
+    localStorage.removeItem(STORE_KEY);
+    store = JSON.parse(JSON.stringify(DEFAULT_STORE));
+    saveAll();
+    alert('Akun & data dihapus. Silakan daftar ulang.');
+    showLogin();
+  } else if(opt==='3'){
+    if(!confirm('Hapus semua data (keuangan, catatan, tugas, agenda)?')) return;
+    store = JSON.parse(JSON.stringify(DEFAULT_STORE));
+    saveAll();
+    renderAll();
+    alert('Semua data dihapus.');
+  } else alert('Pilihan tidak dikenal.');
+});
+
+/* --------- Tabs builder --------- */
 const TABS = [
   {id:'dashboard', title:'Dashboard'},
   {id:'keuangan', title:'Keuangan'},
@@ -393,152 +451,139 @@ const TABS = [
   {id:'tasks', title:'Tugas'},
   {id:'agenda', title:'Agenda'},
   {id:'profil', title:'Profil'},
-  {id:'visual', title:'Visualisasi'},
+  {id:'visual', title:'Visualisasi'}
 ];
 function buildTabs(){
-  const tabs = document.getElementById('tabs');
-  tabs.innerHTML = '';
+  const nav = document.getElementById('tabs'); nav.innerHTML='';
   TABS.forEach(t=>{
     const btn = document.createElement('button');
     btn.textContent = t.title;
-    btn.dataset.target = 'tab-' + t.id;
-    btn.onclick = ()=> switchTab(t.id);
-    if(t.id==='dashboard') btn.classList.add('active');
-    tabs.appendChild(btn);
+    btn.id = 'tab-' + t.id;
+    btn.addEventListener('click', ()=> switchTab(t.id));
+    if(t.id === 'dashboard') btn.classList.add('active');
+    nav.appendChild(btn);
   });
 }
 function switchTab(id){
-  // header tabs active
-  document.querySelectorAll('nav.tabs button').forEach(b=> b.classList.toggle('active', b.dataset.target === 'tab-' + id));
-  // show section
-  document.querySelectorAll('main section').forEach(s=> s.classList.toggle('active', s.id === 'tab-' + id));
-  // render as needed
-  if(id==='dashboard') renderDashboard();
-  if(id==='keuangan') renderFinance();
-  if(id==='notes') renderNotes();
-  if(id==='tasks') renderTasks();
-  if(id==='agenda') renderEvents();
-  if(id==='profil') loadProfile();
-  if(id==='visual') renderVisual();
+  // header tabs active state
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.toggle('active', b.id === 'tab-' + id));
+  // show matching section inside app-main
+  const sections = document.querySelectorAll('#app-main section');
+  sections.forEach(s => s.style.display = s.id === 'tab-' + id ? '' : 'none');
+  // call renderers
+  if(id === 'dashboard') renderDashboard();
+  if(id === 'keuangan') renderFinance();
+  if(id === 'notes') renderNotes();
+  if(id === 'tasks') renderTasks();
+  if(id === 'agenda') renderEvents();
+  if(id === 'profil') loadProfile();
+  if(id === 'visual') renderVisual();
 }
+function goTo(tabId){ switchTab(tabId); }
 
-/* ------------------------------
-   Utilities
-   ------------------------------ */
-const IDR = new Intl.NumberFormat('id-ID', {style:'currency', currency:'IDR', maximumFractionDigits:0});
-function uid(){ return Math.random().toString(36).slice(2) + Date.now().toString(36); }
-function todayYMD(){ return new Date().toISOString().slice(0,10); }
-function fmtDateLocal(ymd){ if(!ymd) return '-'; const d = new Date(ymd + 'T00:00:00'); return d.toLocaleDateString('id-ID'); }
-
-/* ------------------------------
-   Dashboard
-   ------------------------------ */
-let dashChart;
+/* --------- Dashboard --------- */
 function renderDashboard(){
-  // compute sums
-  let saldo=0, income=0, expense=0;
-  const month = (new Date()).toISOString().slice(0,7);
+  // monthly stats
+  const month = new Date().toISOString().slice(0,7);
+  let saldo = 0, inc = 0, exp = 0;
   const byCat = {};
   store.finances.forEach(f=>{
-    const a = Number(f.amount)||0;
-    if(f.type==='income') { saldo += a; } else { saldo -= a; }
+    const a = Number(f.amount) || 0;
+    if(f.type === 'income') saldo += a; else saldo -= a;
     if((f.date||'').startsWith(month)){
-      if(f.type==='income') income += a; else expense += a;
-      if(f.type==='expense'){ byCat[f.cat || 'Lainnya'] = (byCat[f.cat || 'Lainnya'] || 0) + a; }
+      if(f.type === 'income') inc += a; else { exp += a; byCat[f.cat||'Lainnya'] = (byCat[f.cat||'Lainnya']||0) + a; }
     }
   });
   document.getElementById('dash-saldo').textContent = IDR.format(saldo);
-  document.getElementById('dash-income').textContent = IDR.format(income);
-  document.getElementById('dash-expense').textContent = IDR.format(expense);
+  document.getElementById('dash-income').textContent = IDR.format(inc);
+  document.getElementById('dash-expense').textContent = IDR.format(exp);
   document.getElementById('dash-tasks').textContent = store.tasks.length;
   document.getElementById('dash-notes').textContent = store.notes.length;
-  document.getElementById('dash-agenda').textContent = store.events.length;
+  document.getElementById('dash-events').textContent = store.events.length;
 
-  // upcoming events (7 days)
-  const now = new Date();
-  const week = new Date(now.getTime() + 7*24*3600*1000);
-  const upcoming = store.events.map(e=> ({...e, dt: new Date(e.date + 'T' + (e.time || '00:00'))})).filter(e=> e.dt >= now && e.dt <= week).sort((a,b)=>a.dt-b.dt).slice(0,8);
-  const ul = document.getElementById('upcoming-list'); ul.innerHTML = upcoming.length ? '' : '<div class="muted">Tidak ada agenda 7 hari ke depan.</div>';
-  upcoming.forEach(u=>{
-    const div = document.createElement('div');
-    div.className = 'tiny';
+  // upcoming events
+  const now = new Date(), weekLater = new Date(now.getTime() + 7*24*3600*1000);
+  const upcoming = store.events.map(e => ({...e, dt: new Date(e.date + 'T' + (e.time||'00:00'))}))
+    .filter(e=> e.dt >= now && e.dt <= weekLater)
+    .sort((a,b)=>a.dt-b.dt).slice(0,8);
+  const up = document.getElementById('upcoming-list'); up.innerHTML = '';
+  if(!upcoming.length) up.innerHTML = '<div class="muted">Tidak ada agenda 7 hari ke depan.</div>';
+  upcoming.forEach(u => {
+    const div = document.createElement('div'); div.className = 'tiny';
     div.innerHTML = `<strong style="color:var(--accent)">${u.dt.toLocaleString('id-ID')}</strong> — ${u.desc}`;
-    ul.appendChild(div);
+    up.appendChild(div);
   });
 
-  // dash chart: byCat bar
+  // dash chart: by category bar (using byCat summarized)
   const ctx = document.getElementById('dash-chart').getContext('2d');
-  const cats = Object.keys(byCat);
-  const vals = cats.map(k=>byCat[k]);
+  const labels = Object.keys(byCat);
+  const data = labels.map(k=>byCat[k]);
   if(dashChart) dashChart.destroy();
-  dashChart = new Chart(ctx, { type:'bar', data:{ labels:cats, datasets:[{label:'Pengeluaran (bulan ini)', data:vals, backgroundColor:'rgba(96,165,250,0.9)'}] }, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }});
+  dashChart = new Chart(ctx, {
+    type:'bar',
+    data: { labels, datasets:[{ label:'Pengeluaran (bulan ini)', data, backgroundColor:'rgba(96,165,250,0.9)' }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
+  });
 }
 
-/* ------------------------------
-   Finance CRUD + Charts
-   ------------------------------ */
-let chartFinance, chartSummary;
+/* --------- Finance --------- */
 function addTransaction(){
   const date = document.getElementById('fin-date').value || todayYMD();
   const type = document.getElementById('fin-type').value;
-  const cat = (document.getElementById('fin-cat').value || '').trim();
-  const desc = (document.getElementById('fin-desc').value || '').trim();
-  const amount = Number(document.getElementById('fin-amount').value || 0);
-  if(!amount) return alert('Jumlah tidak boleh 0');
+  const cat = (document.getElementById('fin-cat').value||'').trim();
+  const desc= (document.getElementById('fin-desc').value||'').trim();
+  const amount = Number(document.getElementById('fin-amount').value||0);
+  if(!amount) return alert('Jumlah harus lebih dari 0.');
   store.finances.push({ id: uid(), date, type, cat, desc, amount });
   saveAll(); clearFinanceForm(); renderFinance(); renderDashboard();
 }
 function clearFinanceForm(){
-  document.getElementById('fin-date').value = ''; document.getElementById('fin-type').value = 'income';
-  document.getElementById('fin-cat').value = ''; document.getElementById('fin-desc').value=''; document.getElementById('fin-amount').value='';
+  document.getElementById('fin-date').value=''; document.getElementById('fin-type').value='income';
+  document.getElementById('fin-cat').value=''; document.getElementById('fin-desc').value=''; document.getElementById('fin-amount').value='';
 }
 function deleteTransaction(id){
-  if(!confirm('Hapus transaksi?')) return;
-  store.finances = store.finances.filter(f => f.id !== id);
+  if(!confirm('Hapus transaksi ini?')) return;
+  store.finances = store.finances.filter(f=> f.id !== id);
   saveAll(); renderFinance(); renderDashboard();
 }
-function monthOptionsForFilter(selId){
-  const sel = document.getElementById(selId);
+function monthOptions(selectId){
+  const sel = document.getElementById(selectId);
   const months = [...new Set(store.finances.map(f => (f.date||'').slice(0,7)).filter(Boolean))].sort().reverse();
   const cur = (new Date()).toISOString().slice(0,7);
   const opts = [cur, ...months.filter(m=>m!==cur)];
   sel.innerHTML = opts.map(m=>`<option value="${m}">${m}</option>`).join('');
 }
 function renderFinance(){
-  monthOptionsForFilter('fin-filter');
+  monthOptions('fin-filter');
   const month = document.getElementById('fin-filter').value || (new Date()).toISOString().slice(0,7);
-  const rows = store.finances.filter(f => (f.date||'').startsWith(month)).sort((a,b)=> a.date.localeCompare(b.date));
+  const rows = store.finances.filter(f=> (f.date||'').startsWith(month)).sort((a,b)=> a.date.localeCompare(b.date));
   const tbody = document.getElementById('fin-tbody'); tbody.innerHTML = '';
-  let saldo=0, inc=0, exp=0; const byCat = {};
+  let saldo=0, inc=0, exp=0; const byCat={};
   rows.forEach(r=>{
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${fmtDateLocal(r.date)}</td><td><span class="pill">${r.type==='income'?'Pemasukan':'Pengeluaran'}</span></td><td>${r.cat||'-'}</td><td>${r.desc||'-'}</td><td><strong>${IDR.format(r.amount)}</strong></td><td><button class="icon-btn" title="Hapus" onclick="deleteTransaction('${r.id}')">✕</button></td>`;
+    tr.innerHTML = `<td>${fmtDate(r.date)}</td><td><span class="pill">${r.type==='income'?'Pemasukan':'Pengeluaran'}</span></td><td>${r.cat||'-'}</td><td>${r.desc||'-'}</td><td><strong>${IDR.format(r.amount)}</strong></td><td><button class="icon-btn" title="Hapus" onclick="deleteTransaction('${r.id}')">✕</button></td>`;
     tbody.appendChild(tr);
     if(r.type==='income'){ inc += r.amount; saldo += r.amount; } else { exp += r.amount; saldo -= r.amount; byCat[r.cat||'Lainnya'] = (byCat[r.cat||'Lainnya']||0) + r.amount; }
   });
   document.getElementById('fin-sum').textContent = IDR.format(saldo);
-  // finance charts
-  // by category pie
-  const finCtx = document.getElementById('chart-finance').getContext('2d');
-  const catLabels = Object.keys(byCat);
-  const catVals = catLabels.map(k=>byCat[k]);
+  // chart: by category pie
+  const ctx = document.getElementById('chart-finance').getContext('2d');
+  const labels = Object.keys(byCat);
+  const data = labels.map(k=>byCat[k]);
   if(chartFinance) chartFinance.destroy();
-  chartFinance = new Chart(finCtx, { type:'doughnut', data:{ labels:catLabels, datasets:[{ data:catVals, backgroundColor:['#60a5fa','#34d399','#f59e0b','#ef4444','#a78bfa'] }] }, options:{plugins:{legend:{position:'bottom'}}, maintainAspectRatio:false }});
-
-  // summary chart (pemasukan vs pengeluaran for month)
-  const summaryCtx = document.getElementById('chart-summary').getContext('2d');
+  chartFinance = new Chart(ctx, { type:'doughnut', data:{ labels, datasets:[{ data, backgroundColor:['#60a5fa','#34d399','#f59e0b','#ef4444','#a78bfa'] }] }, options:{plugins:{legend:{position:'bottom'}}, maintainAspectRatio:false }});
+  // summary chart (monthly income vs expense)
+  const sctx = document.getElementById('chart-summary').getContext('2d');
   if(chartSummary) chartSummary.destroy();
-  chartSummary = new Chart(summaryCtx, { type:'bar', data:{ labels:['Pemasukan','Pengeluaran'], datasets:[{ label:'Rp', data:[inc, exp], backgroundColor:['#10b981','#ef4444'] }] }, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }});
+  chartSummary = new Chart(sctx, { type:'bar', data:{ labels:['Pemasukan','Pengeluaran'], datasets:[{ label:'Rp', data:[inc, exp], backgroundColor:['#10b981','#ef4444'] }] }, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }});
 }
 
-/* ------------------------------
-   Notes
-   ------------------------------ */
+/* --------- Notes --------- */
 function addNote(){
-  const txt = (document.getElementById('note-text').value || '').trim();
+  const txt = (document.getElementById('note-text').value||'').trim();
   if(!txt) return alert('Isi catatan terlebih dahulu.');
   store.notes.unshift({ id: uid(), text: txt, dateISO: new Date().toISOString() });
-  saveAll(); document.getElementById('note-text').value = ''; renderNotes(); renderDashboard();
+  saveAll(); document.getElementById('note-text').value=''; renderNotes(); renderDashboard();
 }
 function delNote(id){
   if(!confirm('Hapus catatan?')) return;
@@ -548,25 +593,22 @@ function renderNotes(){
   const wrap = document.getElementById('notes-list'); wrap.innerHTML = '';
   if(!store.notes.length){ wrap.innerHTML = '<div class="muted">Belum ada catatan.</div>'; return; }
   store.notes.forEach(n=>{
-    const div = document.createElement('div');
-    div.style.display='flex'; div.style.justifyContent='space-between'; div.style.alignItems='center'; div.style.marginBottom='8px';
-    div.innerHTML = `<div><div class="muted">${new Date(n.dateISO).toLocaleString('id-ID')}</div><div>${n.text}</div></div><div><button class="btn ghost" onclick="delNote('${n.id}')">Hapus</button></div>`;
-    wrap.appendChild(div);
+    const item = document.createElement('div'); item.style.display='flex'; item.style.justifyContent='space-between'; item.style.alignItems='center'; item.style.marginBottom='8px';
+    item.innerHTML = `<div><div class="muted">${new Date(n.dateISO).toLocaleString('id-ID')}</div><div>${n.text}</div></div><div><button class="btn ghost" onclick="delNote('${n.id}')">Hapus</button></div>`;
+    wrap.appendChild(item);
   });
 }
 
-/* ------------------------------
-   Tasks
-   ------------------------------ */
+/* --------- Tasks --------- */
 function addTask(){
-  const text = (document.getElementById('task-text').value || '').trim();
+  const text = (document.getElementById('task-text').value||'').trim();
   const date = document.getElementById('task-date').value || todayYMD();
   if(!text) return alert('Masukkan tugas.');
-  store.tasks.unshift({ id: uid(), text, date });
+  store.tasks.unshift({ id: uid(), text, date, done:false });
   saveAll(); document.getElementById('task-text').value=''; document.getElementById('task-date').value=''; renderTasks(); renderDashboard();
 }
-function toggleTaskDone(id){
-  const t = store.tasks.find(x=>x.id===id); if(t) { t.done = !t.done; saveAll(); renderTasks(); renderDashboard(); }
+function toggleTask(id){
+  const t = store.tasks.find(x=>x.id===id); if(t){ t.done = !t.done; saveAll(); renderTasks(); renderDashboard(); }
 }
 function delTask(id){
   if(!confirm('Hapus tugas?')) return;
@@ -576,20 +618,25 @@ function renderTasks(){
   const wrap = document.getElementById('tasks-list'); wrap.innerHTML = '';
   if(!store.tasks.length){ wrap.innerHTML = '<div class="muted">Belum ada tugas.</div>'; return; }
   store.tasks.forEach(t=>{
-    const el = document.createElement('div');
-    el.style.display='flex'; el.style.justifyContent='space-between'; el.style.alignItems='center'; el.style.marginBottom='8px';
-    el.innerHTML = `<div><label style="cursor:pointer"><input type="checkbox" ${t.done? 'checked':''} onchange="toggleTaskDone('${t.id}')"> <strong style="color:var(--text)">${t.text}</strong><div class="muted">${fmtDateLocal(t.date)}</div></label></div><div><button class="btn ghost" onclick="delTask('${t.id}')">Hapus</button></div>`;
+    const el = document.createElement('div'); el.style.display='flex'; el.style.justifyContent='space-between'; el.style.alignItems='center'; el.style.marginBottom='8px';
+    el.innerHTML = `<div><label style="cursor:pointer"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${t.id}')"> <strong style="color:var(--text)">${t.text}</strong><div class="muted">${fmtDate(t.date)}</div></label></div><div><button class="btn ghost" onclick="delTask('${t.id}')">Hapus</button></div>`;
     wrap.appendChild(el);
   });
+  // tasks chart
+  const tasksByDate = {};
+  store.tasks.forEach(t=> tasksByDate[t.date] = (tasksByDate[t.date]||0) + 1);
+  const labels = Object.keys(tasksByDate).sort();
+  const data = labels.map(l=>tasksByDate[l]);
+  const tctx = document.getElementById('chart-tasks').getContext('2d');
+  if(chartTasks) chartTasks.destroy();
+  chartTasks = new Chart(tctx, { type:'line', data:{ labels: labels.map(l=>fmtDate(l)), datasets:[{ label:'Tugas', data, borderColor:'#60a5fa', backgroundColor:'rgba(96,165,250,0.12)', fill:true }] }, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }});
 }
 
-/* ------------------------------
-   Events / Agenda
-   ------------------------------ */
+/* --------- Events / Agenda --------- */
 function addEvent(){
   const date = document.getElementById('evt-date').value || todayYMD();
   const time = document.getElementById('evt-time').value || '';
-  const desc = (document.getElementById('evt-desc').value || '').trim();
+  const desc = (document.getElementById('evt-desc').value||'').trim();
   if(!desc) return alert('Deskripsi harus diisi.');
   store.events.push({ id: uid(), date, time, desc });
   saveAll(); document.getElementById('evt-date').value=''; document.getElementById('evt-time').value=''; document.getElementById('evt-desc').value=''; renderEvents(); renderDashboard();
@@ -603,16 +650,21 @@ function renderEvents(){
   if(!store.events.length){ wrap.innerHTML = '<div class="muted">Belum ada jadwal.</div>'; return; }
   const list = [...store.events].sort((a,b)=> (a.date + (a.time||'')).localeCompare(b.date + (b.time||'')));
   list.forEach(e=>{
-    const el = document.createElement('div');
-    el.style.display='flex'; el.style.justifyContent='space-between'; el.style.alignItems='center'; el.style.marginBottom='8px';
-    el.innerHTML = `<div><div class="muted">${fmtDateLocal(e.date)} ${e.time? '• ' + e.time : ''}</div><div>${e.desc}</div></div><div><button class="btn ghost" onclick="delEvent('${e.id}')">Hapus</button></div>`;
+    const el = document.createElement('div'); el.style.display='flex'; el.style.justifyContent='space-between'; el.style.alignItems='center'; el.style.marginBottom='8px';
+    el.innerHTML = `<div><div class="muted">${fmtDate(e.date)} ${e.time? '• ' + e.time : ''}</div><div>${e.desc}</div></div><div><button class="btn ghost" onclick="delEvent('${e.id}')">Hapus</button></div>`;
     wrap.appendChild(el);
   });
+  // agenda chart
+  const agBy = {};
+  store.events.forEach(a=> agBy[a.date] = (agBy[a.date]||0) + 1);
+  const aLabels = Object.keys(agBy).sort();
+  const aData = aLabels.map(l=>agBy[l]);
+  const actx = document.getElementById('chart-agenda').getContext('2d');
+  if(chartAgenda) chartAgenda.destroy();
+  chartAgenda = new Chart(actx, { type:'bar', data:{ labels: aLabels.map(l=>fmtDate(l)), datasets:[{ label:'Agenda', data: aData, backgroundColor:'#f59e0b' }] }, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }});
 }
 
-/* ------------------------------
-   Profile
-   ------------------------------ */
+/* --------- Profile --------- */
 function saveProfile(){
   store.profile = {
     name: document.getElementById('pf-name').value.trim(),
@@ -631,82 +683,24 @@ function loadProfile(){
 }
 function clearProfile(){ if(confirm('Hapus profil?')){ store.profile = {}; saveAll(); loadProfile(); renderDashboard(); } }
 
-/* ------------------------------
-   Visualizations
-   ------------------------------ */
-let chartTasks, chartAgenda;
+/* --------- Visualizations --------- */
 function renderVisual(){
+  // toggles
   const showFin = document.getElementById('toggle-fin').checked;
   const showTasks = document.getElementById('toggle-tasks').checked;
   const showAgenda = document.getElementById('toggle-agenda').checked;
-  // show/hide containers
-  document.getElementById('vc-fin').style.display = showFin ? 'block' : 'none';
-  document.getElementById('vc-summary').style.display = showFin ? 'block' : 'none';
-  document.getElementById('vc-tasks').style.display = showTasks ? 'block' : 'none';
-  document.getElementById('vc-agenda').style.display = showAgenda ? 'block' : 'none';
-
-  // tasks chart (count per date)
-  const tasksByDate = {};
-  store.tasks.forEach(t=> { const d = t.date || todayYMD(); tasksByDate[d] = (tasksByDate[d]||0) + 1; });
-  const tLabels = Object.keys(tasksByDate).sort();
-  const tData = tLabels.map(d=>tasksByDate[d]);
-  const tctx = document.getElementById('chart-tasks').getContext('2d');
-  if(chartTasks) chartTasks.destroy();
-  chartTasks = new Chart(tctx, { type:'line', data:{ labels:tLabels.map(l=>fmtDateLocal(l)), datasets:[{ label:'Jumlah tugas', data:tData, borderColor: 'rgba(96,165,250,1)', backgroundColor:'rgba(96,165,250,0.12)', fill:true }] }, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }});
-
-  // agenda chart (timeline counts)
-  const agendaByDate = {};
-  store.events.forEach(a=> { agendaByDate[a.date] = (agendaByDate[a.date]||0) + 1; });
-  const aLabels = Object.keys(agendaByDate).sort();
-  const adata = aLabels.map(d=>agendaByDate[d]);
-  const actx = document.getElementById('chart-agenda').getContext('2d');
-  if(chartAgenda) chartAgenda.destroy();
-  chartAgenda = new Chart(actx, { type:'bar', data:{ labels:aLabels.map(l=>fmtDateLocal(l)), datasets:[{ label:'Agenda', data:adata, backgroundColor:'rgba(245,158,11,0.9)' }] }, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }});
+  document.getElementById('vc-fin').style.display = showFin ? '' : 'none';
+  document.getElementById('vc-summary').style.display = showFin ? '' : 'none';
+  document.getElementById('vc-tasks').style.display = showTasks ? '' : 'none';
+  document.getElementById('vc-agenda').style.display = showAgenda ? '' : 'none';
+  // tasks and agenda charts are updated in renderTasks() / renderEvents()
+  // finance charts in renderFinance()
+  renderFinance();
+  renderTasks();
+  renderEvents();
 }
 
-/* ------------------------------
-   Export & Backup
-   ------------------------------ */
-async function exportExcel(){
-  try{
-    // build sheets via XLSX
-    const wb = XLSX.utils.book_new();
-    const finData = [['Tanggal','Jenis','Kategori','Deskripsi','Jumlah'], ...store.finances.map(f=>[f.date, f.type, f.cat||'', f.desc||'', f.amount])];
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(finData), 'Keuangan');
-    const noteData = [['Waktu','Catatan'], ...store.notes.map(n=>[new Date(n.dateISO).toLocaleString('id-ID'), n.text])];
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(noteData), 'Catatan');
-    const taskData = [['Tanggal','Tugas'], ...store.tasks.map(t=>[t.date, t.text])];
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(taskData), 'Tugas');
-    const evtData = [['Tanggal','Waktu','Deskripsi'], ...store.events.map(e=>[e.date, e.time, e.desc])];
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(evtData), 'Agenda');
-    const prof = store.profile || {};
-    const profData = [['Field','Nilai'], ['Nama', prof.name||''], ['Email', prof.email||''], ['Alamat', prof.address||''], ['Catatan', prof.notes||'']];
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(profData), 'Profil');
-    const wbout = XLSX.write(wb, { bookType:'xlsx', type:'array' });
-    saveAs(new Blob([wbout], {type:'application/octet-stream'}), 'Personal-Management.xlsx');
-  } catch(e){ alert('Gagal ekspor Excel: ' + e.message); }
-}
-async function exportWord(){
-  try{
-    const { Document, Packer, Paragraph, HeadingLevel, TextRun } = window.docx;
-    const docChildren = [];
-    const p = store.profile || {};
-    docChildren.push(new Paragraph({ text: 'Profil', heading: HeadingLevel.HEADING_2 }));
-    docChildren.push(new Paragraph({ children: [ new TextRun(`Nama: ${p.name||''}`) ] }));
-    docChildren.push(new Paragraph({ children: [ new TextRun(`Email: ${p.email||''}`) ] }));
-    docChildren.push(new Paragraph({ text: 'Keuangan', heading: HeadingLevel.HEADING_2 }));
-    store.finances.forEach(f => { docChildren.push(new Paragraph({ children: [ new TextRun(`${f.date} | ${f.type} | ${f.cat||'-'} | ${f.desc||'-'} | ${IDR.format(f.amount)}`) ] })); });
-    docChildren.push(new Paragraph({ text: 'Catatan', heading: HeadingLevel.HEADING_2 }));
-    store.notes.forEach(n => docChildren.push(new Paragraph({ children: [ new TextRun(`${new Date(n.dateISO).toLocaleString('id-ID')} – ${n.text}`) ] })));
-    docChildren.push(new Paragraph({ text: 'Tugas', heading: HeadingLevel.HEADING_2 }));
-    store.tasks.forEach(t => docChildren.push(new Paragraph({ children: [ new TextRun(`${t.date} – ${t.text}`) ] })));
-    docChildren.push(new Paragraph({ text: 'Agenda', heading: HeadingLevel.HEADING_2 }));
-    store.events.forEach(ev => docChildren.push(new Paragraph({ children: [ new TextRun(`${ev.date} ${ev.time||''} – ${ev.desc}`) ] })));
-    const doc = new Document({ sections: [{ properties: {}, children: docChildren }] });
-    const blob = await Packer.toBlob(doc);
-    saveAs(blob, 'Personal-Management.docx');
-  } catch(e){ alert('Gagal ekspor Word: ' + e.message); }
-}
+/* --------- Export / Import / Backup --------- */
 function backupJSON(){
   const blob = new Blob([JSON.stringify(store, null, 2)], { type:'application/json' });
   saveAs(blob, 'pm-backup.json');
@@ -714,129 +708,111 @@ function backupJSON(){
 function importJSON(file){
   const reader = new FileReader();
   reader.onload = (ev) => {
-    try{
+    try {
       const data = JSON.parse(ev.target.result);
-      // minimal validation
+      // basic validation
       if(!data || typeof data !== 'object') throw new Error('File tidak valid');
-      store = Object.assign({}, defaultStore, data);
+      store = Object.assign({}, DEFAULT_STORE, data);
       saveAll(); renderAll();
-      alert('Impor berhasil.');
-    }catch(err){ alert('Gagal impor: ' + err.message); }
+      alert('Impor data berhasil.');
+    } catch(e){ alert('Gagal impor: ' + e.message); }
   };
   reader.readAsText(file);
 }
-
-/* ------------------------------
-   Generic helpers
-   ------------------------------ */
-function deleteAll(key){
-  if(!confirm('Hapus semua data untuk ' + key + ' ?')) return;
-  if(Array.isArray(store[key])) store[key] = [];
-  else store[key] = {};
-  saveAll(); renderAll();
+function exportExcel(){
+  try{
+    const wb = XLSX.utils.book_new();
+    const finData = [['Tanggal','Jenis','Kategori','Deskripsi','Jumlah'], ...store.finances.map(f=>[f.date,f.type,f.cat||'',f.desc||'',f.amount])];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(finData), 'Keuangan');
+    const noteData = [['Waktu','Catatan'], ...store.notes.map(n=>[new Date(n.dateISO).toLocaleString('id-ID'), n.text])];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(noteData), 'Catatan');
+    const taskData = [['Tanggal','Tugas'], ...store.tasks.map(t=>[t.date,t.text])];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(taskData), 'Tugas');
+    const evtData = [['Tanggal','Waktu','Deskripsi'], ...store.events.map(e=>[e.date,e.time,e.desc])];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(evtData), 'Agenda');
+    const prof = store.profile || {};
+    const profData = [['Field','Nilai'], ['Nama',prof.name||''], ['Email',prof.email||''], ['Alamat',prof.address||''], ['Catatan',prof.notes||'']];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(profData), 'Profil');
+    const wbout = XLSX.write(wb, { bookType:'xlsx', type:'array' });
+    saveAs(new Blob([wbout], { type:'application/octet-stream' }), 'Personal-Management.xlsx');
+  } catch(e){ alert('Gagal ekspor Excel: ' + e.message); }
+}
+async function exportWord(){
+  try{
+    const { Document, Packer, Paragraph, HeadingLevel, TextRun } = window.docx;
+    const docChildren = [];
+    const p = store.profile || {};
+    docChildren.push(new Paragraph({ text:'Profil', heading: HeadingLevel.HEADING_2 }));
+    docChildren.push(new Paragraph({ children: [ new TextRun(`Nama: ${p.name||''}`) ] }));
+    docChildren.push(new Paragraph({ children: [ new TextRun(`Email: ${p.email||''}`) ] }));
+    docChildren.push(new Paragraph({ text:'Keuangan', heading: HeadingLevel.HEADING_2 }));
+    store.finances.forEach(f => docChildren.push(new Paragraph({ children: [ new TextRun(`${f.date} | ${f.type} | ${f.cat||'-'} | ${f.desc||'-'} | ${IDR.format(f.amount)}`) ] })));
+    docChildren.push(new Paragraph({ text:'Catatan', heading: HeadingLevel.HEADING_2 }));
+    store.notes.forEach(n => docChildren.push(new Paragraph({ children: [ new TextRun(`${new Date(n.dateISO).toLocaleString('id-ID')} – ${n.text}`) ] })));
+    docChildren.push(new Paragraph({ text:'Tugas', heading: HeadingLevel.HEADING_2 }));
+    store.tasks.forEach(t => docChildren.push(new Paragraph({ children: [ new TextRun(`${t.date} – ${t.text}`) ] })));
+    docChildren.push(new Paragraph({ text:'Agenda', heading: HeadingLevel.HEADING_2 }));
+    store.events.forEach(e => docChildren.push(new Paragraph({ children: [ new TextRun(`${e.date} ${e.time||''} – ${e.desc}`) ] })));
+    const doc = new Document({ sections: [{ properties: {}, children: docChildren }] });
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, 'Personal-Management.docx');
+  } catch(e){ alert('Gagal ekspor Word: ' + e.message); }
 }
 
-/* ------------------------------
-   Wire up UI buttons & events
-   ------------------------------ */
-function hookUI(){
+/* --------- Generic helpers --------- */
+function deleteAll(key){
+  if(!confirm('Hapus semua data ' + key + ' ?')) return;
+  if(Array.isArray(store[key])) store[key] = []; else store[key] = {};
+  saveAll(); renderAll();
+}
+function renderAll(){ renderDashboard(); renderFinance(); renderNotes(); renderTasks(); renderEvents(); loadProfile(); renderVisual(); }
+
+/* --------- Initial UI wiring & bootstrap --------- */
+function init(){
   buildTabs();
-  // hook backup/import buttons
-  document.getElementById('btn-backup').addEventListener('click', backupJSON);
-  function backupJSON(){ backupJSON_(); } // wrapper
-  function backupJSON_(){ backupJSON = backupJSON; } // noop to avoid linter confusion
+  // Hide app until auth passed
+  document.getElementById('app-main').style.display = 'none';
+  document.getElementById('login-area').style.display = '';
+  document.getElementById('pin-area').style.display = 'none';
 
-  document.getElementById('import-json').addEventListener('change', (e)=>{
-    const f = e.target.files?.[0]; if(f) importJSON(f);
-    e.target.value = '';
-  });
-  document.getElementById('btn-backup').addEventListener('click', backupJSON);
-  // logout handled earlier
-  document.getElementById('btn-logout').addEventListener('click', ()=>{ if(confirm('Logout?')){ localStorage.removeItem(AUTH_KEY); showLoginScreen(true); } });
+  // Tab default: hide all sections inside app-main and show dashboard on showApp
+  document.querySelectorAll('#app-main section').forEach(s => s.style.display = 'none');
 
-  // toggles update visual
+  // Bind some global UI actions for quick export buttons (top controls)
+  // Backup/import wired above
+
+  // init toggles
   ['toggle-fin','toggle-tasks','toggle-agenda'].forEach(id=>{
     document.getElementById(id).addEventListener('change', ()=>{ if(document.getElementById('tab-visual').classList.contains('active')) renderVisual(); });
   });
 
-  // filter initial value
-  document.getElementById('fin-filter').addEventListener('change', renderFinance);
+  // Show auth UI depending on stored auth
+  initAuthUI();
 
-  // quick actions
-  document.getElementById('btn-backup').addEventListener('click', backupJSON);
+  // Pre-fill fin-filter on load
+  monthOptions('fin-filter');
 
-  // top-level import file (also present in Dashboard actions)
-  document.getElementById('import-json').addEventListener('change', (e)=>{ const f = e.target.files?.[0]; if(f) importJSON(f); e.target.value=''; });
-
-  // export buttons on dashboard (query by text)
-  // create dynamic listeners for dashboard area using event delegation (not necessary but ok)
+  // Auto-save snapshot every 2 min (optional)
+  setInterval(()=>{ saveAll(); console.log('Auto-saved pm_store'); }, 120000);
 }
+window.addEventListener('load', init);
 
-/* ------------------------------
-   Initial render helpers
-   ------------------------------ */
-function renderAll(){
-  renderDashboard(); renderFinance(); renderNotes(); renderTasks(); renderEvents(); loadProfile(); renderVisual();
-}
-
-/* ------------------------------
-   Init App on successful auth
-   ------------------------------ */
-function initApp(){
-  buildTabs();
-  // show app area
-  document.querySelectorAll('nav.tabs, main, .subtoggles, .controls').forEach(el=>el && (el.style.display='flex'));
-  showLoginScreen(false);
-  // default show dashboard
-  switchTab('dashboard');
-  // bind some buttons outside functions
-  document.getElementById('btn-backup').addEventListener('click', backupJSON);
-  // dashboard export/import buttons inside card — not individually needed as top controls handle them
-  // Hook import in dashboard (duplicate element id import-json used)
-  document.getElementById('import-json').addEventListener('change', (e)=>{ const f = e.target.files?.[0]; if(f) importJSON(f); e.target.value=''; });
-
-  // attach click handlers for export within page (present as example)
-  // The export buttons inside dashboard are created in markup via top controls; we can also add small inline listeners:
-  // None in markup; we keep top control event.
-  renderAll();
-}
-
-/* ------------------------------
-   Small safety: ensure elements exist before adding listeners
-   ------------------------------ */
-(function attachSmallHandlers(){
-  // backup/import & logout already set in hookUI/initApp
-  // Attach quick export buttons in header if you want (omitted)
-})();
-
-/* ------------------------------
-   Start
-   ------------------------------ */
-initAuth(); // show login if needed
-hookUI();   // build tabs & wire toggles
-
-// expose some functions to window for onclick calls from markup
+/* Expose functions used in markup */
 window.switchTab = switchTab;
+window.goTo = goTo;
 window.addTransaction = addTransaction;
 window.clearFinanceForm = clearFinanceForm;
 window.renderFinance = renderFinance;
 window.addNote = addNote;
-window.deleteAll = deleteAll;
 window.addTask = addTask;
-window.addEventListener('load', ()=>{
-  // pre-populate filter options
-  monthOptionsForFilter('fin-filter');
-  // initial rendering of small components even if not logged in; actual rendering occurs on initApp
-  renderAll();
-});
+window.addEventListener('renderTasks', renderTasks);
 
-// Expose export/import functions for UI use
+/* Expose export & import */
+window.backupJSON = backupJSON;
+window.importJSON = importJSON;
 window.exportExcel = exportExcel;
 window.exportWord = exportWord;
-window.backupData = backupJSON;
-window.importJSON = importJSON;
-window.deleteTransaction = deleteTransaction;
-window.deleteEvent = delEvent;
+window.deleteAll = deleteAll;
 window.saveProfile = saveProfile;
 window.loadProfile = loadProfile;
 window.clearProfile = clearProfile;

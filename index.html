@@ -1,81 +1,283 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Personal Management – All‑in‑One</title>
-  <!-- Lightweight libs via CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Management</title>
   <style>
     :root {
-      --bg: #0f172a; /* slate-900 */
-      --panel: #111827; /* gray-900 */
-      --muted: #cbd5e1; /* slate-300 */
-      --text: #e2e8f0; /* slate-200 */
-      --accent: #22c55e; /* green-500 */
-      --accent-2: #60a5fa; /* blue-400 */
-      --danger: #ef4444; /* red-500 */
-      --card: #0b1221; /* dark blend */
-      --border: #1f2937; /* gray-800 */
+      --primary:#007bff;
+      --danger:#dc3545;
+      --secondary:#6c757d;
+      --bg:#f5f6fa;
+      --card:#fff;
     }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; }
-    a { color: inherit; text-decoration: none; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .brand { font-weight: 800; letter-spacing: .3px; font-size: 20px; display: flex; align-items: center; gap: 10px; }
-    .brand .badge { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #031; padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 900; }
-    .tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-top: 14px; }
-    .tab-btn { border: 1px solid var(--border); background: #0b1221; color: var(--text); padding: 10px 12px; border-radius: 10px; cursor: pointer; font-weight: 600; }
-    .tab-btn.active { outline: 2px solid transparent; border-color: transparent; background: linear-gradient(135deg, #0b1221 0%, #0b1221 60%), linear-gradient(135deg, var(--accent), var(--accent-2)); background-clip: padding-box, border-box; border: 2px solid transparent; }
-    main { margin-top: 20px; }
-    section { display: none; }
-    section.active { display: block; }
-
-    .grid { display: grid; gap: 14px; }
-    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
-    @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
-
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
-    .card h3 { margin: 0 0 10px; font-size: 16px; color: var(--muted); font-weight: 700; }
-    .stat { display: flex; align-items: baseline; justify-content: space-between; padding: 10px 0; border-top: 1px dashed var(--border); }
-    .stat:first-child { border-top: none; padding-top: 0; }
-    .muted { color: var(--muted); font-size: 12px; }
-    .btn { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; border-radius: 10px; cursor: pointer; font-weight: 600; }
-    .btn.primary { background: var(--accent); color: #052e13; border: none; }
-    .btn.danger { background: var(--danger); color: #fff; border: none; }
-    .btn.ghost { background: transparent; border-color: var(--border); }
-    .row { display: flex; gap: 8px; flex-wrap: wrap; }
-    input, select, textarea { width: 100%; background: #0a1220; color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
-    label { font-size: 12px; color: var(--muted); font-weight: 600; }
-    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 10px; }
-    th, td { border-bottom: 1px solid var(--border); padding: 10px; text-align: left; }
-    th { background: #0f1a2f; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
-    tr:hover td { background: #0b1428; }
-    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; border: 1px solid var(--border); color: var(--muted); }
-    .flex-between { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .hr { height: 1px; background: var(--border); margin: 10px 0; }
-
-    /* Mini calendar */
-    .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-    .calendar .cell { border: 1px solid var(--border); border-radius: 10px; padding: 8px; min-height: 70px; background:#0a1220; position: relative; }
-    .calendar .cell .d { font-size: 12px; color: var(--muted); }
-    .calendar .cell.today { outline: 2px solid var(--accent); }
-    .calendar .cell .dot { position: absolute; bottom: 6px; left: 6px; right: 6px; height: 6px; border-radius: 3px; background: var(--accent-2); }
-
-    footer { margin: 30px 0 10px; text-align: center; color: var(--muted); font-size: 12px; }
+    body { font-family: 'Segoe UI', sans-serif; margin:0; background:var(--bg); color:#333; }
+    header { background:var(--primary); color:#fff; padding:1rem; text-align:center; }
+    nav { display:flex; overflow-x:auto; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.1); }
+    nav button { flex:1; padding:0.8rem; border:none; background:#fff; cursor:pointer; font-weight:500; transition:0.3s; }
+    nav button:hover { background:#f0f0f0; }
+    nav button.active { color:var(--primary); border-bottom:3px solid var(--primary); }
+    section { display:none; padding:1rem; }
+    section.active { display:block; }
+    .card { background:var(--card); padding:1rem; border-radius:12px; margin-bottom:1rem; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+    .btn { padding:0.5rem 1rem; border:none; border-radius:6px; cursor:pointer; font-size:0.9rem; }
+    .btn.primary { background:var(--primary); color:#fff; }
+    .btn.danger { background:var(--danger); color:#fff; }
+    .btn.secondary { background:var(--secondary); color:#fff; }
+    table { width:100%; border-collapse:collapse; margin-top:0.5rem; }
+    th, td { padding:0.6rem; border-bottom:1px solid #eee; text-align:left; font-size:0.9rem; }
+    input, select, textarea { padding:0.6rem; margin:0.3rem 0; width:100%; border:1px solid #ddd; border-radius:6px; }
+    ul { list-style:none; padding:0; }
+    ul li { padding:0.6rem; margin-bottom:0.5rem; background:#f9f9f9; border-radius:6px; display:flex; justify-content:space-between; align-items:center; }
+    canvas { max-width:100%; margin-top:1rem; }
+    .login-container { max-width:400px; margin:5rem auto; background:#fff; padding:2rem; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.2); }
+    .login-container h2 { margin-bottom:1rem; text-align:center; }
+    .login-container input { margin-bottom:1rem; }
+    .actions { display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="brand">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<header>
+  <h1>All-in-One Personal Management</h1>
+</header>
+
+<!-- LOGIN PAGE -->
+<div id="login-page" class="login-container">
+  <h2>Login</h2>
+  <input type="text" id="login-username" placeholder="Username">
+  <input type="password" id="login-password" placeholder="Password">
+  <button class="btn primary" onclick="login()">Masuk</button>
+  <p style="text-align:center; margin-top:1rem; font-size:0.9rem;">Belum punya akun? <a href="#" onclick="register()">Daftar</a></p>
+</div>
+
+<!-- APP CONTENT -->
+<div id="app" style="display:none;">
+  <nav id="menu">
+    <button onclick="show('dashboard')" class="active">Dashboard</button>
+    <button onclick="show('finance')">Keuangan</button>
+    <button onclick="show('notes')">Catatan</button>
+    <button onclick="show('tasks')">Tugas</button>
+    <button onclick="show('agenda')">Agenda</button>
+    <button onclick="show('profile')">Profil</button>
+    <button onclick="show('visual')">Visualisasi</button>
+    <button onclick="logout()">Logout</button>
+  </nav>
+
+  <!-- DASHBOARD -->
+  <section id="dashboard" class="active">
+    <div class="card">
+      <h2>Ringkasan</h2>
+      <p>Saldo: <span id="fin-sum">Rp0</span></p>
+      <p>Pemasukan: <span id="fin-income">Rp0</span> | Pengeluaran: <span id="fin-expense">Rp0</span></p>
+      <p>Total Catatan: <span id="note-count">0</span></p>
+      <p>Total Tugas: <span id="task-count">0</span></p>
+      <p>Agenda: <span id="agenda-count">0</span></p>
+      <div class="actions">
+        <button class="btn secondary" onclick="exportExcel()">Export Excel</button>
+        <button class="btn secondary" onclick="exportWord()">Export Word</button>
+        <button class="btn secondary" onclick="backupData()">Backup JSON</button>
+        <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+        <button class="btn secondary" onclick="document.getElementById('importFile').click()">Import JSON</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- KEUANGAN -->
+  <section id="finance">
+    <div class="card">
+      <h2>Manajemen Keuangan</h2>
+      <form onsubmit="addTransaction(event)">
+        <input type="date" id="fin-date" required>
+        <select id="fin-type">
+          <option value="income">Pemasukan</option>
+          <option value="expense">Pengeluaran</option>
+        </select>
+        <input type="text" id="fin-cat" placeholder="Kategori">
+        <input type="number" id="fin-amount" placeholder="Jumlah" required>
+        <input type="text" id="fin-desc" placeholder="Deskripsi">
+        <button class="btn primary" type="submit">Tambah</button>
+      </form>
+      <table>
+        <thead><tr><th>Tanggal</th><th>Jenis</th><th>Kategori</th><th>Deskripsi</th><th>Jumlah</th><th>Aksi</th></tr></thead>
+        <tbody id="fin-tbody"></tbody>
+      </table>
+      <canvas id="chart-cat"></canvas>
+    </div>
+  </section>
+
+  <!-- CATATAN -->
+  <section id="notes">
+    <div class="card">
+      <h2>Catatan Harian</h2>
+      <form onsubmit="addNote(event)">
+        <input type="text" id="note-title" placeholder="Judul" required>
+        <textarea id="note-content" placeholder="Isi catatan" required></textarea>
+        <button class="btn primary" type="submit">Simpan</button>
+      </form>
+      <ul id="note-list"></ul>
+    </div>
+  </section>
+
+  <!-- TUGAS -->
+  <section id="tasks">
+    <div class="card">
+      <h2>Manajemen Tugas</h2>
+      <form onsubmit="addTask(event)">
+        <input type="text" id="task-title" placeholder="Judul Tugas" required>
+        <input type="date" id="task-date" required>
+        <button class="btn primary" type="submit">Tambah</button>
+      </form>
+      <ul id="task-list"></ul>
+    </div>
+  </section>
+
+  <!-- AGENDA -->
+  <section id="agenda">
+    <div class="card">
+      <h2>Agenda</h2>
+      <form onsubmit="addAgenda(event)">
+        <input type="date" id="agenda-date" required>
+        <input type="text" id="agenda-event" placeholder="Acara" required>
+        <button class="btn primary" type="submit">Tambah</button>
+      </form>
+      <ul id="agenda-list"></ul>
+    </div>
+  </section>
+
+  <!-- PROFIL -->
+  <section id="profile">
+    <div class="card">
+      <h2>Profil Saya</h2>
+      <input type="text" id="profile-name" placeholder="Nama">
+      <input type="text" id="profile-email" placeholder="Email">
+      <button class="btn primary" onclick="saveProfile()">Simpan</button>
+    </div>
+  </section>
+
+  <!-- VISUALISASI -->
+  <section id="visual">
+    <div class="card">
+      <h2>Visualisasi Data</h2>
+      <canvas id="chart-summary"></canvas>
+      <canvas id="chart-tasks"></canvas>
+      <canvas id="chart-agenda"></canvas>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+/* === LOGIN SYSTEM === */
+function login(){
+  const u = login-username.value, p = login-password.value;
+  const user = JSON.parse(localStorage.getItem('user')||'{}');
+  if(user.username===u && user.password===p){
+    login-page.style.display='none'; app.style.display='block'; renderAll();
+  } else alert('Username atau password salah!');
+}
+function register(){
+  if(!login-username.value||!login-password.value){ alert('Isi username & password untuk daftar'); return; }
+  localStorage.setItem('user', JSON.stringify({username:login-username.value,password:login-password.value}));
+  alert('Registrasi berhasil, silakan login!');
+}
+function logout(){ app.style.display='none'; login-page.style.display='block'; }
+
+/* === STORAGE === */
+let store = JSON.parse(localStorage.getItem('data')||'{"finances":[],"notes":[],"tasks":[],"agenda":[],"profile":{}}');
+function save(){ localStorage.setItem('data',JSON.stringify(store)); }
+
+/* === NAVIGATION === */
+function show(id){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+  document.querySelector(`nav button[onclick="show('${id}')"]`).classList.add('active');
+  document.getElementById(id).classList.add('active');
+  renderAll();
+}
+
+/* === UTIL === */
+const IDR=new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR'});
+function fmtDate(d){return new Date(d).toLocaleDateString('id-ID');}
+
+/* === FINANCE === */
+function addTransaction(e){
+  e.preventDefault();
+  store.finances.push({id:Date.now(),date:fin-date.value,type:fin-type.value,cat:fin-cat.value,amount:+fin-amount.value,desc:fin-desc.value});
+  save(); renderFinance(); renderDashboard();
+}
+function deleteTransaction(id){ store.finances=store.finances.filter(f=>f.id!=id); save(); renderFinance(); renderDashboard(); }
+let chartCat;
+function renderFinance(){
+  fin-tbody.innerHTML=''; let saldo=0,inc=0,exp=0,byCat={};
+  for(const r of store.finances){
+    fin-tbody.innerHTML+=`<tr><td>${fmtDate(r.date)}</td><td>${r.type}</td><td>${r.cat}</td><td>${r.desc}</td><td>${IDR.format(r.amount)}</td><td><button class="btn danger" onclick="deleteTransaction('${r.id}')">X</button></td></tr>`;
+    if(r.type==='income'){inc+=r.amount;saldo+=r.amount;} else {exp+=r.amount;saldo-=r.amount;byCat[r.cat||'Lainnya']=(byCat[r.cat||'Lainnya']||0)+r.amount;}
+  }
+  fin-sum.textContent=IDR.format(saldo); fin-income.textContent=IDR.format(inc); fin-expense.textContent=IDR.format(exp);
+  if(chartCat)chartCat.destroy();
+  chartCat=new Chart(chart-cat,{type:'pie',data:{labels:Object.keys(byCat),datasets:[{data:Object.values(byCat),backgroundColor:['#007bff','#28a745','#ffc107','#dc3545','#6c757d']}]},options:{plugins:{legend:{position:'bottom'}}}});
+}
+
+/* === NOTES === */
+function addNote(e){ e.preventDefault(); store.notes.push({id:Date.now(),title:note-title.value,content:note-content.value}); save(); renderNotes(); renderDashboard(); }
+function deleteNote(id){ store.notes=store.notes.filter(n=>n.id!=id); save(); renderNotes(); renderDashboard(); }
+function renderNotes(){ note-list.innerHTML=''; for(const n of store.notes){ note-list.innerHTML+=`<li>${n.title}: ${n.content}<button class="btn danger" onclick="deleteNote('${n.id}')">X</button></li>`; } }
+
+/* === TASKS === */
+function addTask(e){ e.preventDefault(); store.tasks.push({id:Date.now(),title:task-title.value,date:task-date.value}); save(); renderTasks(); renderDashboard(); }
+function deleteTask(id){ store.tasks=store.tasks.filter(t=>t.id!=id); save(); renderTasks(); renderDashboard(); }
+function renderTasks(){ task-list.innerHTML=''; for(const t of store.tasks){ task-list.innerHTML+=`<li>${t.title} (${fmtDate(t.date)})<button class="btn danger" onclick="deleteTask('${t.id}')">X</button></li>`; } }
+
+/* === AGENDA === */
+function addAgenda(e){ e.preventDefault(); store.agenda.push({id:Date.now(),date:agenda-date.value,event:agenda-event.value}); save(); renderAgenda(); renderDashboard(); }
+function deleteAgenda(id){ store.agenda=store.agenda.filter(a=>a.id!=id); save(); renderAgenda(); renderDashboard(); }
+function renderAgenda(){ agenda-list.innerHTML=''; for(const a of store.agenda){ agenda-list.innerHTML+=`<li>${fmtDate(a.date)} - ${a.event}<button class="btn danger" onclick="deleteAgenda('${a.id}')">X</button></li>`; } }
+
+/* === PROFILE === */
+function saveProfile(){ store.profile={name:profile-name.value,email:profile-email.value}; save(); }
+function renderProfile(){ profile-name.value=store.profile.name||''; profile-email.value=store.profile.email||''; }
+
+/* === VISUALISASI === */
+let chartSummary, chartTasks, chartAgenda;
+function renderVisual(){
+  if(chartSummary)chartSummary.destroy();
+  chartSummary=new Chart(chart-summary,{type:'bar',data:{labels:['Pemasukan','Pengeluaran'],datasets:[{label:'Rp',data:[store.finances.filter(f=>f.type==='income').reduce((a,b)=>a+b.amount,0),store.finances.filter(f=>f.type==='expense').reduce((a,b)=>a+b.amount,0)],backgroundColor:['#28a745','#dc3545']}]}});
+
+  if(chartTasks)chartTasks.destroy();
+  chartTasks=new Chart(chart-tasks,{type:'line',data:{labels:store.tasks.map(t=>fmtDate(t.date)),datasets:[{label:'Tugas',data:store.tasks.map(()=>1),borderColor:'#007bff',fill:false}]}});
+  
+  if(chartAgenda)chartAgenda.destroy();
+  chartAgenda=new Chart(chart-agenda,{type:'bar',data:{labels:store.agenda.map(a=>fmtDate(a.date)),datasets:[{label:'Agenda',data:store.agenda.map(()=>1),backgroundColor:'#ffc107'}]}});
+}
+
+/* === DASHBOARD === */
+function renderDashboard(){
+  fin-sum.textContent=IDR.format(store.finances.reduce((s,f)=>s+(f.type==='income'?f.amount:-f.amount),0));
+  fin-income.textContent=IDR.format(store.finances.filter(f=>f.type==='income').reduce((s,f)=>s+f.amount,0));
+  fin-expense.textContent=IDR.format(store.finances.filter(f=>f.type==='expense').reduce((s,f)=>s+f.amount,0));
+  note-count.textContent=store.notes.length; task-count.textContent=store.tasks.length; agenda-count.textContent=store.agenda.length;
+}
+
+/* === EXPORT & BACKUP === */
+function exportExcel(){
+  let csv="Sheet,Data\nSaldo,"+fin-sum.textContent+"\nPemasukan,"+fin-income.textContent+"\nPengeluaran,"+fin-expense.textContent;
+  const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download="data.xlsx"; a.click();
+}
+function exportWord(){
+  let content=`<h1>Ringkasan Data</h1><p>Saldo: ${fin-sum.textContent}</p><p>Pemasukan: ${fin-income.textContent}</p><p>Pengeluaran: ${fin-expense.textContent}</p>`;
+  const blob=new Blob(['\ufeff',content],{type:'application/msword'}); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download="data.doc"; a.click();
+}
+function backupData(){ const blob=new Blob([JSON.stringify(store)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="backup.json"; a.click(); }
+function importData(e){ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=x=>{ store=JSON.parse(x.target.result); save(); renderAll(); }; r.readAsText(f); }
+
+/* === INIT === */
+function renderAll(){ renderFinance(); renderNotes(); renderTasks(); renderAgenda(); renderProfile(); renderVisual(); renderDashboard(); }
+</script>
+</body>
+</html>        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 2L20 7V17L12 22L4 17V7L12 2Z" stroke="url(#g)" stroke-width="2"/>
           <defs>
             <linearGradient id="g" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
